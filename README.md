@@ -1,2 +1,2 @@
-# mr-marshmallow
+# Mr. Marshmallow
 Mr. Marshmallow, my first Discord bot!
