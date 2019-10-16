@@ -1,0 +1,27 @@
+{
+  "name": "Mr-Marshmallow",
+  "version": "0.1",
+  "description": "A bot designed for fun",
+  "main": "index.js",
+  "scripts": {},
+  "author": "Lil Joey",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/uws": "^11.149.1",
+    "better-sqlite-pool": "^0.2.2",
+    "bufferutil": "^4.0.1",
+    "common-tags": "^1.8.0",
+    "dateformat": "^3.0.3",
+    "discord.js": "^11.5.1",
+    "enmap": "^4.8.5",
+    "erlpack": "^0.1.2",
+    "git": "^0.1.5",
+    "libsodium-wrappers": "^0.7.4",
+    "node-fetch": "^2.6.0",
+    "node-opus": "^0.3.1",
+    "opusscript": "0.0.6",
+    "snekfetch": "^4.0.4",
+    "sodium": "^3.0.2",
+    "urban": "^0.3.2"
+  }
+}
