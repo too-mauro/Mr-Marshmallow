@@ -1,5 +1,5 @@
 # Mr. Marshmallow
-A simple Discord bot!
+A happy li'l marshmallow-based Discord bot! A sweet boy who'll help spice up your server. Runs on Discord.js / Node.js.
 
 ### A Few Things to Note
 - By default, the bot's prefix is set to be `m!`. If you want to change it, change the prefix line in the `botsettings.json` file. The option to change the prefix per-server is not implemented at this time and will come in the future.
@@ -17,3 +17,5 @@ Once it installs, type in the following command:
 `node index.js`, 
 
 which will start the bot, send a message that it's online in the terminal, and will send a message to the Discord channel of your choice (see note above).
+
+(A special thanks to [An Idiot's Guide](https://github.com/AnIdiotsGuide/discordjs-bot-guide) and [MenuDocs](https://github.com/MenuDocs/Discord.JS-Tutorial) for creating the base code that my project runs on!)
