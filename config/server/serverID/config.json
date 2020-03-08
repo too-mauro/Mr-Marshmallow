@@ -1,0 +1,12 @@
+{
+ "prefix": "m!",
+ "dmStatus": false,
+ "dmChannel": null,
+ "welcomeMessage": "Hiya username, welcome to servername!",
+ "leaveMessage": "username just left the server.",
+ "cbStatus": false,
+ "cbChannel": null,
+ "cbMinPins": 5,
+ "maxQuotes": 500,
+ "gameInProgress": false
+}
