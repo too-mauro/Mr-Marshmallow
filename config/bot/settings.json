@@ -1,0 +1,12 @@
+{
+	"token": "(bot token here)",
+	"ownerID": "(Discord user ID here)",
+	"logChannel": "(logging channel ID here)",
+	"startupMessage": false,
+	"ticketChannel": "(ticketing channel ID here)",
+	"defaultPrefix": "m!",
+	"defaultJoinMessage": "Hiya username, welcome to servername!",
+	"defaultLeaveMessage": "username just left the server.",
+	"defaultMinMessagePins": 5,
+	"defaultMaxQuotes": 500
+}
