@@ -1,52 +1,60 @@
-const { RichEmbed } = require("discord.js");
-const { prefix } = require("../../botsettings.json");
+const fs = require("fs");
+const discord = require("discord.js");
 const { readdirSync } = require("fs");
 const { stripIndents } = require("common-tags");
-const { cyan } = require("../../colours.json");
+const { cyan } = require("../../config/bot/colors.json");
 
 module.exports = {
     config: {
         name: "help",
-        aliases: ["h", "halp", "commands"],
-        usage: "m!help",
+        aliases: ["h", "commands"],
+        usage: "(command)",
         category: "miscellaneous",
-        description: "Displays all commands that the bot has.",
+        description: "Displays all commands that the bot has."
     },
     run: async (bot, message, args) => {
-        const embed = new RichEmbed()
-            .setColor(cyan)
-            .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
-            .setThumbnail(bot.user.displayAvatarURL)
 
-        if(!args[0]) {
-            const categories = readdirSync("./commands/")
+      // get server's prefix
+      var prefix = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`)).prefix;
 
-            embed.setDescription(`These are the avaliable commands for ${message.guild.me.displayName}\nThe bot prefix is: **${prefix}**`)
-            embed.setFooter(`© ${message.guild.me.displayName} | Total Commands: ${bot.commands.size}`, bot.user.displayAvatarURL);
+      const embed = new discord.MessageEmbed()
+          .setColor(cyan)
+          .setTitle(`${bot.user.username} Help`);
 
-            categories.forEach(category => {
-                const dir = bot.commands.filter(c => c.config.category === category)
-                const capitalise = category.slice(0, 1).toUpperCase() + category.slice(1)
-                try {
-                    embed.addField(`❯ ${capitalise} [${dir.size}]:`, dir.map(c => `\`${c.config.name}\``).join(" "))
-                } catch(e) {
-                    console.log(e)
-                }
-            })
+      if (!args || args.length < 1) {
+          const categories = readdirSync("./commands/");
 
-            return message.channel.send(embed)
-        } else {
-            let command = bot.commands.get(bot.aliases.get(args[0].toLowerCase()) || args[0].toLowerCase())
-            if(!command) return message.channel.send(embed.setTitle("Invalid Command.").setDescription(`Do \`${prefix}help\` for the list of the commands.`))
-            command = command.config
+          embed.setDescription(`Use the command format \`${prefix}help <command>\` to view more info about a command.\nThe prefix for ${message.guild.name} is \` ${prefix} \``);
+          embed.setFooter(`${bot.user.username} | Total Commands: ${bot.commands.size}`, bot.user.displayAvatarURL());
 
-            embed.setDescription(stripIndents`The bot's prefix is: \`${prefix}\`\n
-            **Command:** ${command.name.slice(0, 1).toUpperCase() + command.name.slice(1)}
-            **Description:** ${command.description || "No Description provided."}
-            **Usage:** ${command.usage ? `\`${prefix}${command.name} ${command.usage}\`` : "No Usage"}
-            **Aliases:** ${command.aliases ? command.aliases.join(", ") : "None."}`)
+          categories.forEach(category => {
+              const dir = bot.commands.filter(c => c.config.category === category);
+              const capitalise = category.slice(0, 1).toUpperCase() + category.slice(1);
+              try {
+                  embed.addField(`❯ ${category} [${dir.size}]:`, dir.map(c => `\`${c.config.name}\``).join(" "));
+              }
+              catch (e) {
+                  console.log(e);
+              }
+          })
 
-            return message.channel.send(embed)
-        }
+          return message.channel.send({embed});
+      }
+      else {
+          let command = bot.commands.get(bot.aliases.get(args[0].toLowerCase()) || args[0].toLowerCase());
+          if (!command) {
+            embed.setTitle("Invalid command.").setDescription(`Do \`${prefix}help\` for the list of commands.`);
+            return message.channel.send({embed});
+          }
+          command = command.config;
+
+          embed.setDescription(stripIndents`The prefix for ${message.guild.name} is: \` ${prefix} \`\n
+          **Command:** ${command.name.slice(0, 1).toUpperCase() + command.name.slice(1)}
+          **Description:** ${command.description || "No description provided."}
+          **Usage:** ${command.usage ? `\`${prefix}${command.name} ${command.usage}\`` : `\`${prefix}${command.name}\``}
+          **Aliases:** ${command.aliases ? command.aliases.join(", ") : "None."}`);
+
+          return message.channel.send({embed});
+      }
     }
 }
