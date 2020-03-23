@@ -1,21 +1,19 @@
 # Mr. Marshmallow
 A happy li'l marshmallow-based Discord bot! A sweet boy who'll help spice up your server. Runs on Discord.js / Node.js.
 
-### A Few Things to Note
-- By default, the bot's prefix is set to be `m!`. If you want to change it, change the prefix line in the `botsettings.json` file. The option to change the prefix per-server is not implemented at this time and will come in the future.
-- The token and owner ID lines have placeholders in the `botsettings.json` file. You would need to change those before you start the bot.
-- There's a channel placeholder in the `/events/client/ready.js` file. Once the bot starts, it sends a message to a user-defined Discord channel stating it's online and ready to go. If you don't want that feature, either comment the line out or delete it.
+## Features
+- Dab on someone!
+- Quote your friends!
+- Flip a coin!
+- Roll for a D20!
+- Play a game of trivia or solve some riddles! (currently in the works)
 
-### Getting Started
-To get started using this bot's code, you'll need to install a few packages. This runs on the Discord.js and Node.js frameworks, so installing these two packages is a must.
-Assuming Node.js is already installed, go to the directory where the code is located and enter this into a terminal:
+## Installation
+Mr. Marshmallow runs on top of Node.js. Please refer to the [Node.js website](https://nodejs.org/en/) for installation.
 
-`npm install discord.js enmap erlpack node-fetch better-sqlite-pool --save`
+Once Node.js is installed, go to the bot's main directory and type `npm install` in a terminal window; it should install all of the necessary packages for you.
 
-Once it installs, type in the following command:
+It's highly recommended to keep this bot running with PM2, a Node.js process manager. In the case of an unexpected shutdown, Mr. Marshmallow will be able to get right back up when your system starts! Please refer to [this guide](https://discordjs.guide/improving-dev-environment/pm2.html#installation) on how to set up PM2.
 
-`node index.js`, 
-
-which will start the bot, send a message that it's online in the terminal, and will send a message to the Discord channel of your choice (see note above).
-
-(A special thanks to [An Idiot's Guide](https://github.com/AnIdiotsGuide/discordjs-bot-guide) and [MenuDocs](https://github.com/MenuDocs/Discord.JS-Tutorial) for creating the base code that my project runs on!)
+## Acknowledgements
+A special thanks to [An Idiot's Guide](https://github.com/AnIdiotsGuide/discordjs-bot-guide) and [MenuDocs](https://github.com/MenuDocs/Discord.JS-Tutorial) for creating the base code that my project runs on!
