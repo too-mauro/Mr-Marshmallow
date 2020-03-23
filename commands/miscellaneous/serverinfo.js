@@ -1,25 +1,31 @@
-const { RichEmbed } = require("discord.js")
-const { cyan } = require("../../colours.json");
+/*
+This command shows information about the current server, such as the server owner,
+how many members and roles there are, and when the server was created.
+*/
+
+const discord = require("discord.js");
+const { aqua } = require("../../config/bot/colors.json");
 
 module.exports = {
     config: {
         name: "serverinfo",
-        description: "Pulls the server's information!",
-        usage: "!serverinfo",
+        description: "Gets information about the server.",
         category: "miscellaneous",
-        aliases: ["si", "serverdesc", "sinfo"]
+        usage: "",
+        aliases: ["si", "sinfo", "serverdesc"]
     },
     run: async (bot, message, args) => {
-    let sEmbed = new RichEmbed()
-        .setColor(cyan)
-        .setTitle("Server Information")
-        .setThumbnail(message.guild.iconURL)
-        .setAuthor(`${message.guild.name} Information`, message.guild.iconURL)
-        .addField("**Server Name:** ", `${message.guild.name}`, true)
-        .addField("**Server Owner:** ", `${message.guild.owner}`, true)
-        .addField("**Member Count:** ", `${message.guild.memberCount}`, true)
-        .addField("**Role Count:** ", `${message.guild.roles.size}`, true)
-        .setFooter(`Mr. Marshmallow | Footer`, bot.user.displayAvatarURL);
-    message.channel.send(sEmbed);
+      let embed = new discord.MessageEmbed()
+          .setColor(aqua)
+          .setTitle(`${message.guild.name} Info`)
+          .setThumbnail(message.guild.iconURL())
+          .addField("**Server Name:**", `${message.guild.name}`, true)
+          .addField("**Server Owner:**", `${message.guild.owner}`, true)
+          .addField("**Member Count:**", `${message.guild.memberCount}`, true)
+          .addField("**Role Count:**", `${message.guild.roles.cache.size}`, true)
+          .addField("**Created On:**", `${message.guild.createdAt}`, true)
+          .setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
+
+      return message.channel.send(embed);
     }
 }
