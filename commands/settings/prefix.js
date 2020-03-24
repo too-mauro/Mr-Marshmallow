@@ -36,8 +36,10 @@ module.exports = {
 
             return message.channel.send({embed});
         }
-
-        configFile.prefix = args.join("");
+        
+        // Set the prefix. In case it's all capital letters, ensure it's lowercase so the bot can be invoked.
+        // Without it, the bot can't be called as it changes the prefix's case to lowercase and checks against the server's prefix.
+        configFile.prefix = args.join("").toLowerCase();
         if (configFile.prefix.length > 5) {
           embed.addField("Prefix is too long!", "The prefix you're trying to set is longer than 5 characters. Please try setting a shorter prefix.");
           return message.channel.send({embed});
