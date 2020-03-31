@@ -16,7 +16,7 @@ module.exports = {
 
     // If there is no argument, just give the user a regular dab.
     if (!args || args.length < 1) {
-      return message.channel.send("**Note:** If you want to dab on someone, just mention them!", {files: ['./config/bot/media/marshDab.png']});
+      return message.channel.send({files: ['./config/bot/media/marshDab.png']});
     }
 
     // grab member mention and ensure it's a member

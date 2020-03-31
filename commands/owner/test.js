@@ -11,13 +11,12 @@ module.exports = {
         name: "test",
         usage: "",
         category: "owner",
-        description: "Just a placeholder command for testing new features."
+        description: "Placeholder command for testing new features. Restricted to the bot owner."
     },
     run: async (bot, message, args) => {
 
-        if (message.author.id != ownerID) return message.channel.send("You need to be the bot owner to run this command!");
+        if (message.author.id != ownerID) return;
 
         // run the rest of the command here
-        
     }
   }

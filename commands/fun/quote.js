@@ -52,9 +52,10 @@ module.exports = {
         case 'net': return message.channel.send("\":clap:  ***L I S T E N***  :clap:\" -aneta_ 2017");
         case 'crispy': return message.channel.send("\"Shut your bitch ass up.\" -Crispy 2017");
         case 'xiv': return message.channel.send("*ahem* \"I\'m Asian.\" -xivee 2016");
-        case 'jasse': return message.channel.send("\"I\'m a motorized yeen machine.\" -Jasse 2018");
-        case 'fig': return message.channel.send("\"OK, quick! Where\'s the *dab* button?\" -FigTrees 2018");
+        case 'jasse': return message.channel.send("\"I'm a motorized yeen machine.\" -Jasse 2018");
+        case 'fig': return message.channel.send("\"OK, quick! Where's the *dab* button?\" -FigTrees 2018");
         case 'bean': return message.channel.send("\"Holding hands is gay. Holding dicks is not.\" -smol_bean 2018");
+        case 'smol': return message.channel.send("\"I panicked and said \"crayon\" when someone asked me what my favorite color is.\" -smol_bean 2019");
       }
     }
     else {

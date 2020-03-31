@@ -8,13 +8,13 @@ const { ownerID } = require("../../config/bot/settings.json");
 module.exports = {
     config: {
         name: "shutdown",
-        description: "Shuts down the bot!",
+        description: "Shuts down the bot. Restricted to the bot owner.",
         category: "owner",
         aliases: ["sd", "restart"]
     },
     run: async (bot, message, args) => {
 
-        if (message.author.id != ownerID) return message.channel.send("You need to be the bot owner to run this command!");
+        if (message.author.id != ownerID) return;
 
         message.channel.send("Are you *sure* you want to shut me off? (y/n)")
         .then(() => {

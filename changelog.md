@@ -1,6 +1,20 @@
 # Mr. Marshmallow Changelog
 This document serves as the complete changelog for Mr. Marshmallow's development. All versions listed here will record the changes that occur between versions uploaded to this repository.
 
+## Version 0.6
+- The DoorMat and CorkBoard features fully work!
+  - *guildMemberAdd*, *guildMemberRemove*, *messageReactionAdd*, and *messageReactionRemove* events all work properly.
+- Forgot your server's prefix? Don't worry, ping the bot and it will tell you!
+- More `owner` commands: `load` and `unload`! No need to turn off the bot to add or remove commands!
+- New file in *config/bot*: 'categories.js'; one place to list all categories in the *commands* folder
+- 'command' handler file adjusted to accommodate moving category list to new file
+- `invite` command now shows a link to the support server and to the GitHub repository (that's right here!)
+- *guildCreate*, *guildDelete*, and *guildUnavailable* events updated to send embedded messages about server information
+
+## Version 0.5.1
+- Fixed the new prefix argument in the `prefix` command
+  - Allowed for setting capital letter prefixes, which couldn't be called as the bot automatically put bot command messages as lowercase.
+
 ## Version 0.5
 - Fixed `userinfo` command (getting user mention didn't work, now it does)
 - `settings` command removed in favor of separate `prefix`, `doormat`, and `corkboard` commands
@@ -24,7 +38,7 @@ This document serves as the complete changelog for Mr. Marshmallow's development
   - `ping`, `uptime`, and `report` from "miscellaneous" category (first two commands merged into `botinfo`)
   - `test` moved to "owner" category
 - Added a new category: **games**
-- Per-server settings partially work. Custom prefixes can be set through the `settings` command, but planned features CorkBoard and DoorMat don't work just yet.
+- Per-server settings partially work. Custom prefixes can be set through the `settings* command, but planned features CorkBoard and DoorMat don't work just yet.
 - More functionality added with new events (creates configuration data when it joins a server).
 
 ## Version 0.3

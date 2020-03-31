@@ -2,14 +2,27 @@
 This command returns an invite link to the support server.
 */
 
+const discord = require("discord.js");
+const { purple_light } = require("../../config/bot/colors.json");
+
 module.exports = {
     config: {
         name: "invite",
-        description: "Invite links for the bot and support server.",
-        aliases: ["inv"]
+        category: "miscellaneous",
+        description: "Useful links for joining the support server, inviting the bot, and checking out the GitHub code.",
+        aliases: ["inv", "links", "link"]
     },
     run: async (bot, message, args) => {
 
-      return message.channel.send("Need some help with something? Check out my server! https://discord.gg/UA6tK26");
+      let embed = new discord.MessageEmbed()
+          .setColor(purple_light)
+          .setTitle(`${bot.user.username} Invites`)
+          .setThumbnail(bot.user.displayAvatarURL())
+          .addField("**Support Server**", `[Join the Rockin' Treehouse!](https://discord.gg/UA6tK26)`)
+          .addField("**Bot Invite Link**", `Coming Soon! <:marshWink:648888770434826242>`)
+          .addField("**GitHub Repository**", `[${bot.user.username}](https://github.com/too-mauro/Mr-Marshmallow)`)
+          .setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
+
+      return message.channel.send(embed);
     }
 }

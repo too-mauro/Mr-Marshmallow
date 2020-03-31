@@ -7,6 +7,8 @@ log channel saying that it joined a new server.
 
 const fs = require("fs");
 const botConfigFile = require("../../config/bot/settings.json");
+const discord = require("discord.js");
+const { green_dark } = require("../../config/bot/colors.json");
 
 module.exports = async (bot, guild) => {
 
@@ -28,7 +30,7 @@ module.exports = async (bot, guild) => {
           leaveMessage: botConfigFile.defaultLeaveMessage,
           cbStatus: false,
           cbChannel: null,
-          cbMinPins: botConfigFile.defaultMinMessagePins,
+          cbPinThreshold: botConfigFile.defaultPinThreshold,
           maxQuotes: botConfigFile.defaultMaxQuotes,
           gameInProgress: false
         };
@@ -46,11 +48,29 @@ module.exports = async (bot, guild) => {
       console.log(`The configuration folder already exists for ${guild.name}!`);
     }
 
-    // Try to send the "joined a server" message to the log channel.
+    // Try to send the "Server Joined" message to the log channel.
+    if (!guild.member(bot.user).hasPermission("EMBED_LINKS")) {
+      try {
+        bot.channels.cache.get(botConfigFile.logChannel).send(`**-- JOINED A SERVER--**\n${guild.name} (ID: ${guild.id})`);
+      }
+      catch (e) {
+        console.log("Couldn't send the \"joined server\" message to the log channel!\n", e);
+      }
+    }
+
+    const embed = new discord.MessageEmbed()
+        .setColor(green_dark)
+        .setTitle(`Joined a Server!`)
+        .addField("Name:", `**${guild.name}**`, true)
+        .addField("ID:", guild.id, true)
+        .addField("Member Count:", guild.memberCount)
+        .setThumbnail(guild.iconURL())
+        .setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
+
     try {
-      bot.channels.cache.get(botConfigFile.logChannel).send(`**-- JOINED A SERVER--**\n${guild.name} (ID: ${guild.id})`);
+      bot.channels.cache.get(botConfigFile.logChannel).send({embed});
     }
     catch (e) {
-      console.log("Couldn't send the server joined message to the log channel!");
+      console.log("Couldn't send the \"joined server\" message to the log channel!\n", e);
     }
 }

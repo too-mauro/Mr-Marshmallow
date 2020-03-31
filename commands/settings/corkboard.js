@@ -155,25 +155,31 @@ module.exports = {
 
           case 'pins':
             if (!args.slice(1) || args.slice(1).length < 1) {
-              embed.setDescription(`Sets the minimum number of :pushpin: reactions needed for a post to appear in the CorkBoard channel.`);                    embed.addField("Minimum Pins Needed:", configFile.cbMinPins);
-              embed.addField("To update:", `\`${configFile.prefix}corkboard pins <number>\``);
+              embed.setDescription(`Sets the minimum number of :pushpin: reactions needed for a post to appear in the CorkBoard channel.`)
+              .addField("Pin Threshold:", configFile.cbPinThreshold)
+              .addField("To update:", `\`${configFile.prefix}corkboard pins <number>\``);
               return message.channel.send({embed});
             }
             if (isNaN(args.slice(1).join(""))) {
-              embed.setDescription(`Non-number value entered.`);
-              embed.addField("In order to set the number of pins, please enter a number!", `Do \`${configFile.prefix}corkboard pins <number>\` to set the needed pin count.`);
+              embed.setDescription(`Non-number value entered.`)
+              .addField("In order to set the number of pins, please enter a number!", `Do \`${configFile.prefix}corkboard pins <number>\` to set the pin threshold.`);
               return message.channel.send({embed});
             }
-            configFile.cbMinPins = parseInt(args.slice(1).join(""));
+            configFile.cbPinThreshold = parseInt(args.slice(1).join(""));
+            if (configFile.cbPinThreshold < 1) {
+              embed.setDescription(`Value too low.`)
+              .addField("The minimum pin threshold must be 1 or higher.", `Do \`${configFile.prefix}corkboard pins <number>\` to set the pin threshold.`);
+              return message.channel.send({embed});
+            }
             fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
               if (err) {
                 console.log(err);
-                return message.channel.send("Something went wrong while trying to set the needed pin count! Please try again later.");
+                return message.channel.send("Something went wrong while trying to set the pin threshold! Please try again later.");
               }
             });
 
             embed.setDescription(`Minimum Pin Count set.`);
-            embed.addField(`The minimum pin count has now been set to: `, configFile.cbMinPins);
+            embed.addField(`The minimum pin count has now been set to: `, configFile.cbPinThreshold);
             return message.channel.send({embed});
 
           default:
@@ -196,7 +202,7 @@ module.exports = {
                 embed.addField(`CorkBoard Channel: `, `<#${configFile.cbChannel}>`, true);
                 break;
             }
-            embed.addField("Minimum Pins:", configFile.cbMinPins);
+            embed.addField("Pin threshold:", configFile.cbPinThreshold);
             return message.channel.send({embed});
         }
     }

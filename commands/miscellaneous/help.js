@@ -16,7 +16,7 @@ module.exports = {
         aliases: ["h", "commands"],
         usage: "(command)",
         category: "miscellaneous",
-        description: "Displays all commands that the bot has."
+        description: "Displays all the commands that Mr. Marshmallow has to offer."
     },
     run: async (bot, message, args) => {
 
@@ -28,29 +28,37 @@ module.exports = {
           .setTitle(`${bot.user.username} Help`);
 
       if (!args || args.length < 1) {
-          const categories = readdirSync("./commands/");
+          let commandCount = 0;
 
+          const categories = readdirSync("./commands/");
           embed.setDescription(`Use the command format \`${prefix}help <command>\` to view more info about a command.\nThe prefix for ${message.guild.name} is \` ${prefix} \``);
-          embed.setFooter(`${bot.user.username} | Total Commands: ${bot.commands.size}`, bot.user.displayAvatarURL());
+
+          // run custom command count out here, so it doesn't repeat itself in the foreach loop
+          const secrets = bot.commands.filter(c => c.config.availableOn === message.guild.id);
+          if (secrets.size > 0) {
+              embed.addField(`Custom (${secrets.size}):`, secrets.map(c => `\`${c.config.name}\``).sort().join(" "));
+              commandCount += secrets.size;
+          }
 
           categories.forEach(category => {
-              const dir = bot.commands.filter(c => c.config.category === category);
-              if (category == 'owner') return;
               const capitalize = category.slice(0, 1).toUpperCase() + category.slice(1);
-              try {
-                  embed.addField(`${capitalize} (${dir.size}):`, dir.map(c => `\`${c.config.name}\``).join(" "));
+              const dir = bot.commands.filter(c => c.config.category === category);
+              if (category == 'owner' || category == 'secret') return;    // <-- don't show owner commands and don't reprint secret commands
+              if (dir.size > 0) {
+                  embed.addField(`${capitalize} (${dir.size}):`, dir.map(c => `\`${c.config.name}\``).sort().join(" "));
+                  commandCount += dir.size;
               }
-              catch (e) {
-                  console.log(e);
+              else {
+                  embed.addField(`${capitalize}`, "**No commands in this category!**");
               }
-          })
-
+          });
+          embed.setFooter(`${bot.user.username} | Total Commands: ${commandCount}`, bot.user.displayAvatarURL());
           return message.channel.send({embed});
       }
       else {
           let command = bot.commands.get(bot.aliases.get(args[0].toLowerCase()) || args[0].toLowerCase());
           if (!command) {
-            embed.setTitle("Invalid command.").setDescription(`Do \`${prefix}help\` for the list of commands.`);
+            embed.setDescription(`**Invalid command**. Do \`${prefix}help\` for the list of commands.`).setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
             return message.channel.send({embed});
           }
           command = command.config;
@@ -60,6 +68,7 @@ module.exports = {
           **Description:** ${command.description || "No description provided."}
           **Usage:** ${command.usage ? `\`${prefix}${command.name} ${command.usage}\`` : `\`${prefix}${command.name}\``}
           **Aliases:** ${command.aliases ? command.aliases.join(", ") : "None."}`);
+          embed.setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
 
           return message.channel.send({embed});
       }

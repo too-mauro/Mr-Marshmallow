@@ -19,12 +19,12 @@ module.exports = {
           .setColor(aqua)
           .setTitle(`${message.guild.name} Info`)
           .setThumbnail(message.guild.iconURL())
-          .addField("**Server Name:**", `${message.guild.name}`, true)
-          .addField("**Server Owner:**", `${message.guild.owner}`, true)
-          .addField("**Member Count:**", `${message.guild.memberCount}`, true)
-          .addField("**Role Count:**", `${message.guild.roles.cache.size}`, true)
-          .addField("**Created On:**", `${message.guild.createdAt}`, true)
-          .setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
+          .addField("**Server Name:**", message.guild.name, true)
+          .addField("**Server Owner:**", message.guild.owner, true)
+          .addField("**Member Count:**", message.guild.memberCount, true)
+          .addField("**Role Count:**", message.guild.roles.cache.size, true)
+          .addField("**Created On:**", message.guild.createdAt, true)
+          .setFooter(bot.user.username, bot.user.displayAvatarURL());
 
       return message.channel.send(embed);
     }

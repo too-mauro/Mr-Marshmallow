@@ -25,9 +25,9 @@ module.exports = {
           .setTitle(`${bot.user.username} Info`)
           .setThumbnail(bot.user.displayAvatarURL())
           .setDescription(`Hanging out with ${bot.users.cache.size} users on ${bot.guilds.cache.size} servers!`)
-          .addField("Current Uptime :clock1:", `${duration(bot.uptime)}`, true)
+          .addField("Current Uptime :clock1:", `${duration(bot.uptime)}`)
           .addField("API Latency:", `${Math.round(bot.ws.ping)} ms`, true)
-          .addField("Server Prefix:", `\`${configFile.prefix}\``, true)
+          .addField("Server Prefix:", `\` ${configFile.prefix} \``, true)
           .setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
 
       return message.channel.send({embed});
@@ -36,6 +36,7 @@ module.exports = {
           const sec = Math.floor((ms / 1000) % 60).toString()
           const min = Math.floor((ms / (1000 * 60)) % 60).toString()
           const hrs = Math.floor((ms / (1000 * 60 * 60)) % 60).toString()
+          if (hrs < 1) return `${min.padStart(2, '0')}m:${sec.padStart(2, '0')}s`;
           return `${hrs.padStart(2, '0')}h:${min.padStart(2, '0')}m:${sec.padStart(2, '0')}s`;
       }
     }

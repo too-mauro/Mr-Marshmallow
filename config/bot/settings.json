@@ -1,12 +1,12 @@
 {
-	"token": "(bot token here)",
-	"ownerID": "(owner ID here)",
-	"logChannel": "(logging channel ID here)",
-	"startupMessage": true,
-	"ticketChannel": "(support channel ID here)",
+	"token": "NDkzMjA4Nzc5NTY3OTIzMjEz.XaJ_AA.9CG-cH3IzIVmJwOkmYEMb1CJE00",
+	"ownerID": "309411734081372162",
+	"logChannel": "566792124100771881",
+	"startupMessage": false,
+	"ticketChannel": "632788916969406465",
 	"defaultPrefix": "m!",
 	"defaultJoinMessage": "Hiya username, welcome to servername!",
 	"defaultLeaveMessage": "username just left the server.",
-	"defaultMinMessagePins": 5,
+	"defaultPinThreshold": 5,
 	"defaultMaxQuotes": 500
 }
