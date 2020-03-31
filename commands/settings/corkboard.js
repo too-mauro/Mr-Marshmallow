@@ -202,7 +202,7 @@ module.exports = {
                 embed.addField(`CorkBoard Channel: `, `<#${configFile.cbChannel}>`, true);
                 break;
             }
-            embed.addField("Pin threshold:", configFile.cbPinThreshold);
+            embed.addField("Pin Threshold:", configFile.cbPinThreshold);
             return message.channel.send({embed});
         }
     }
