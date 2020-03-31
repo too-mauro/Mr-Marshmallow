@@ -178,8 +178,8 @@ module.exports = {
               }
             });
 
-            embed.setDescription(`Minimum Pin Count set.`);
-            embed.addField(`The minimum pin count has now been set to: `, configFile.cbPinThreshold);
+            embed.setDescription(`Pin Threshold set.`);
+            embed.addField(`The pin threshold has now been set to: `, configFile.cbPinThreshold);
             return message.channel.send({embed});
 
           default:
