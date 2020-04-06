@@ -7,7 +7,7 @@
  "cbStatus": false,
  "cbChannel": null,
  "cbPinMode": "democratic",
- "cbMinPins": 1,
+ "cbPinThreshold": 5,
  "maxQuotes": 500,
  "gameInProgress": false
 }
