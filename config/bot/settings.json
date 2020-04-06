@@ -8,5 +8,5 @@
 	"defaultJoinMessage": "Hiya username, welcome to servername!",
 	"defaultLeaveMessage": "username just left the server.",
 	"defaultPinThreshold": 5,
-	"defaultMaxQuotes": 500
+	"defaultMaxQuotes": 300
 }
