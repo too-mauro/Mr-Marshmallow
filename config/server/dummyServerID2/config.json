@@ -6,7 +6,8 @@
  "leaveMessage": "username just left the server.",
  "cbStatus": false,
  "cbChannel": null,
- "cbMinPins": 1,
+ "cbPinMode": "democratic",
+ "cbPinThreshold": 5,
  "maxQuotes": 500,
  "gameInProgress": false
 }
