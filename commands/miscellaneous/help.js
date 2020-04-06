@@ -14,7 +14,7 @@ module.exports = {
     config: {
         name: "help",
         aliases: ["h", "commands"],
-        usage: "(command)",
+        usage: ["(command)"],
         category: "miscellaneous",
         description: "Displays all the commands that Mr. Marshmallow has to offer."
     },
@@ -32,13 +32,6 @@ module.exports = {
 
           const categories = readdirSync("./commands/");
           embed.setDescription(`Use the command format \`${prefix}help <command>\` to view more info about a command.\nThe prefix for ${message.guild.name} is \` ${prefix} \``);
-
-          // run custom command count out here, so it doesn't repeat itself in the foreach loop
-          const secrets = bot.commands.filter(c => c.config.availableOn === message.guild.id);
-          if (secrets.size > 0) {
-              embed.addField(`Custom (${secrets.size}):`, secrets.map(c => `\`${c.config.name}\``).sort().join(" "));
-              commandCount += secrets.size;
-          }
 
           categories.forEach(category => {
               const capitalize = category.slice(0, 1).toUpperCase() + category.slice(1);
@@ -63,10 +56,19 @@ module.exports = {
           }
           command = command.config;
 
+
+          if (command.usage.length > 0) {
+            var usage = '';
+            for (let u = 0; u < command.usage.length - 1; u++) {
+              usage += `\`${prefix}${command.name} ${command.usage[u]}\`, `;
+            }
+            usage += `\`${prefix}${command.name} ${command.usage[command.usage.length - 1]}\``;
+          }
+
           embed.setDescription(stripIndents`The prefix for ${message.guild.name} is: \` ${prefix} \`\n
           **Command:** ${command.name.slice(0, 1).toUpperCase() + command.name.slice(1)}
           **Description:** ${command.description || "No description provided."}
-          **Usage:** ${command.usage ? `\`${prefix}${command.name} ${command.usage}\`` : `\`${prefix}${command.name}\``}
+          **Usage:** ${usage || `\`${prefix}${command.name}\``}
           **Aliases:** ${command.aliases ? command.aliases.join(", ") : "None."}`);
           embed.setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
 

@@ -10,23 +10,23 @@ module.exports = {
     config: {
         name: "userinfo",
         description: "Gives information about yourself or a user.",
-        usage: "(@mention)",
+        usage: ["(@mention)"],
         category: "miscellaneous",
         aliases: ["ui"]
     },
     run: async (bot, message, args) => {
 
+      //return console.log(message.guild.members.cache.get('309411734081372162'));
       if (args[0]) {
-    		const member = getUserFromMention(args[0]);
+    		const member = getUserFromMention(args[0], message.guild);
     		if (!member) {
     			return message.channel.send(`**${message.author.username}**, please use a proper mention if you want to see someone else's information.`);
     		}
 
         let embed = new discord.MessageEmbed()
             .setColor(red_light)
-            .setTitle(`${member.username} Info`)
-            .setThumbnail(member.displayAvatarURL())
-            .addField("**Username:**", `${member.tag}`, true)
+            .setAuthor(member.user.tag, member.user.displayAvatarURL())
+            .setThumbnail(member.user.displayAvatarURL())
             .addField("**ID:**", `${member.id}`, true);
 
         // write out "do not disturb" if the user set themselves to dnd
@@ -36,31 +36,53 @@ module.exports = {
         else {
           embed.addField("**Status:**", `${member.presence.status}`, true);
         }
-        embed.addField("**Created On:**", `${member.createdAt}`, true)
-          .setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
+        embed.addField("**Joined Discord On:**", `${member.user.createdAt}`, false)
+        .addField("**Joined the Server On:**", `${member.joinedAt}`, false)
+
+        var roles = member.roles.cache.filter(r => r.id !== message.guild.id);
+        if (roles.size < 1) {
+          embed.addField("**Roles:**", "No roles!", false);
+        }
+        else {
+          embed.addField(`**Roles (${roles.size}):**`, roles.map(r => r).sort((a, b) => b.position - a.position || b.id - a.id).join(" "), false);
+        }
+
+        if (member == message.guild.owner) {embed.setDescription("**Server Owner**", false); }
+        embed.setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
         return message.channel.send(embed);
       }
 
+      let member = message.guild.members.cache.get(message.author.id);
       let embed = new discord.MessageEmbed()
           .setColor(red_light)
-          .setTitle(`${message.author.username} Info`)
-          .setThumbnail(message.author.displayAvatarURL())
-          .addField("**Username:**", `${message.author.tag}`, true)
-          .addField("**ID:**", `${message.author.id}`, true);
+          .setAuthor(member.user.tag, member.user.displayAvatarURL())
+          .setThumbnail(member.user.displayAvatarURL())
+          .addField("**ID:**", `${member.id}`, true);
 
       // write out "do not disturb" if the user set themselves to dnd
-      if (message.author.presence.status == "dnd") {
+      if (member.presence.status == "dnd") {
         embed.addField("**Status:**", "do not disturb", true);
       }
       else {
-        embed.addField("**Status:**", `${message.author.presence.status}`, true);
+        embed.addField("**Status:**", `${member.presence.status}`, true);
       }
-      embed.addField("**Created On:**", `${message.author.createdAt}`, true)
-        .setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
+      embed.addField("**Joined Discord On:**", `${member.user.createdAt}`, false)
+      .addField("**Joined the Server On:**", `${member.joinedAt}`, false)
+
+      var roles = member.roles.cache.filter(r => r.id !== message.guild.id);
+      if (roles.size < 1) {
+        embed.addField("**Roles:**", "No roles!", false);
+      }
+      else {
+        embed.addField(`**Roles (${roles.size}):**`, roles.map(r => r).sort((a, b) => b.position - a.position || b.id - a.id).join(" "), false);
+      }
+
+      if (member == message.guild.owner) {embed.setDescription("**Server Owner**", false); }
+      embed.setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
       return message.channel.send(embed);
 
 
-      function getUserFromMention(mention) {
+      function getUserFromMention(mention, guild) {
       	// The id is the first and only match found by the RegEx.
       	const matches = mention.match(/^<@!?(\d+)>$/);
 
@@ -71,7 +93,7 @@ module.exports = {
       	// so use index 1.
       	const id = matches[1];
 
-      	return bot.users.cache.get(id);
+      	return guild.members.cache.get(id);
       }
     }
 }

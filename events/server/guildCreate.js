@@ -1,8 +1,9 @@
 /*
 This event runs whenever this bot joins a new server. It creates a new folder
-in the config/server directory, creates a general config.json file and a
-quotes.txt file for the "quote" command, and sends a message to the pre-defined
-log channel saying that it joined a new server.
+in the config/server directory, creates a general config.json file and copies
+the defaultquotes.json file from the config/bot directory for the "quote"
+command, and sends a message to the pre-defined log channel saying that it
+joined a new server.
 */
 
 const fs = require("fs");
@@ -21,7 +22,8 @@ module.exports = async (bot, guild) => {
           if (err) console.log(err);
         });
 
-        // Create the config.json file using default data from the bot's settings.json file
+        // Create the config.json file using default data from the bot's settings.json file.
+        // By default, the Corkboard uses Democratic Mode instead of InstaPin.
         var configData = {
           prefix: botConfigFile.defaultPrefix,
           dmStatus: false,
@@ -30,17 +32,17 @@ module.exports = async (bot, guild) => {
           leaveMessage: botConfigFile.defaultLeaveMessage,
           cbStatus: false,
           cbChannel: null,
+          cbPinMode: "democratic",
           cbPinThreshold: botConfigFile.defaultPinThreshold,
           maxQuotes: botConfigFile.defaultMaxQuotes,
           gameInProgress: false
         };
-
-        fs.writeFile(`./config/server/${guild.id}/config.json`, JSON.stringify(configData, null, 1), (err) => {
+        fs.writeFile(`./config/server/${guild.id}/config.json`, JSON.stringify(configData, null, 1), 'utf8', (err) => {
           if (err) console.log(err);
         });
 
-        // Create a blank quotes.txt file; this is used for the "quote" command.
-        fs.writeFile(`./config/server/${guild.id}/quotes.txt`, "", (err) => {
+        // Copy the quotes from defaultQuotes.json into the server's quotes.json file.
+        fs.copyFile('./config/bot/defaultquotes.json', `./config/server/${guild.id}/quotes.json`, (err) => {
           if (err) console.log(err);
         });
     }

@@ -11,7 +11,7 @@ module.exports = async (bot, message) => {
       const prefix = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`)).prefix;
 
       // if the message specifically pings the bot, return the server's prefix
-      if ((message.content.startsWith(`<@${bot.user.id}`) || message.content.startsWith(`<@!${bot.user.id}`)) && message.content.endsWith(">")) return message.channel.send(`Forgot my prefix? The prefix set for **${message.guild.name}** is: \` ${prefix} \``);
+      if ((message.content.startsWith(`<@${bot.user.id}`) || message.content.startsWith(`<@!${bot.user.id}`)) && message.content.endsWith(">")) return message.channel.send(`Forgot my prefix? **${message.guild.name}**'s prefix is: \` ${prefix} \``);
 
       // makes sure prefix is case-insensitive
       let cleanPrefix = message.content.substr(0, prefix.length).toLowerCase();

@@ -14,7 +14,7 @@ module.exports = {
     config: {
         name: "corkboard",
         aliases: ["cb"],
-        usage: "<on/off/channel/pins>",
+        usage: ["on", "off", "channel <channel>", "pins <number>"],
         category: "settings",
         description: "Configures the CorkBoard feature for this server."
     },
@@ -29,6 +29,7 @@ module.exports = {
             .setColor(orange)
             .setTitle(`${bot.user.username} CorkBoard Settings`);
 
+        if (args[0] && isNaN(args[0])) { args[0] = args[0].toLowerCase(); }
         switch (args[0]) {
           case 'on':
             if (configFile.cbStatus == true) {
@@ -123,7 +124,7 @@ module.exports = {
               return message.channel.send({embed});
             }
             else {
-              var channel = message.guild.channels.cache.find(textChannel => textChannel.name === args[1]);
+              var channel = message.guild.channels.cache.find(textChannel => textChannel.name === args[1].toLowerCase());
               var id = channel ? channel.id : null;
               if (id == null) {
                 embed.setDescription(`No channel found.`);
@@ -153,14 +154,74 @@ module.exports = {
               return message.channel.send({embed});
             }
 
-          case 'pins':
-            if (!args.slice(1) || args.slice(1).length < 1) {
-              embed.setDescription(`Sets the minimum number of :pushpin: reactions needed for a post to appear in the CorkBoard channel.`)
-              .addField("Pin Threshold:", configFile.cbPinThreshold)
-              .addField("To update:", `\`${configFile.prefix}corkboard pins <number>\``);
+          case 'instapin':
+            // check if pin mode is already set to InstaPin
+            if (configFile.cbPinMode == "instapin") {
+              embed.setDescription(`**InstaPin Mode already set.**`);
+              embed.addField(`InstaPin Mode is already enabled for this server.`, `If you would like to switch to Democratic Mode, do \`${configFile.prefix}corkboard democratic\`.`);
               return message.channel.send({embed});
             }
-            if (isNaN(args.slice(1).join(""))) {
+            configFile.cbPinMode = "instapin";  // <-- set pin mode to InstaPin (switch it from Democratic)
+            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
+              if (err) {
+                console.log(err);
+                return message.channel.send("Something went wrong while trying to set the pin mode! Please try again later.");
+              }
+            });
+
+            embed.setDescription(`**InstaPin Mode enabled.**`);
+            if (configFile.cbChannel !== null && !configFile.cbChannel.deleted) {
+              embed.addField(`InstaPin Mode is now enabled.`, `A corkboard channel has already been set, so you're ready to go!`);
+            }
+            else {
+              embed.addField(`InstaPin Mode is now enabled.`, `A corkboard channel has not been set yet, so please set one with \`${configFile.prefix}corkboard channel <channel mention>\`.`);
+            }
+            return message.channel.send({embed});
+            break;
+
+          case 'democratic':
+            // check if pin mode is already set to Democratic
+            if (configFile.cbPinMode == "democratic") {
+              embed.setDescription(`**Democratic Pin Mode already set.**`);
+              embed.addField(`Democratic Pin Mode is already enabled for this server.`, `If you would like to switch to InstaPin Mode, do \`${configFile.prefix}corkboard instapin\`.`);
+              return message.channel.send({embed});
+            }
+            configFile.cbPinMode = "democratic";  // <-- set pin mode to Democratic (switch it from InstaPin)
+            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
+              if (err) {
+                console.log(err);
+                return message.channel.send("Something went wrong while trying to set the pin mode! Please try again later.");
+              }
+            });
+
+            embed.setDescription(`**Democratic Pin Mode enabled.**`);
+            if (configFile.cbChannel !== null && !configFile.cbChannel.deleted) {
+              embed.addField(`Democratic Pin Mode is now enabled.`, `A corkboard channel has already been set, so you're ready to go!`);
+            }
+            else {
+              embed.addField(`Democratic Pin Mode is now enabled.`, `A corkboard channel has not been set yet, so please set one with \`${configFile.prefix}corkboard channel <channel mention>\`.`);
+            }
+            return message.channel.send({embed});
+            break;
+
+          case 'pins':
+            if (!args.slice(1) || args.slice(1).length < 1) {
+              let description = "Sets the minimum number of :pushpin: reactions needed for a post to appear in the CorkBoard channel.";
+              embed.addField("Pin Threshold:", configFile.cbPinThreshold, true)
+              .addField("To update:", `\`${configFile.prefix}corkboard pins <number>\``, true);
+              if (configFile.cbPinMode == "instapin") {
+                embed.setDescription(`${description}\n(**Available in Democratic Pin Mode only.** Currently set to \`InstaPin\`.)`);
+              }
+              else { embed.setDescription(description); }
+              return message.channel.send({embed});
+            }
+            // check if pin mode is set to InstaPin (false)
+            if (configFile.cbPinMode == "instapin") {
+              embed.setDescription(`**InstaPin Mode set for this server.**`);
+              embed.addField(`You cannot set a pin threshold while in InstaPin Mode.`, `If you would like to switch to Democratic Mode, do \`${configFile.prefix}corkboard democratic\`.`);
+              return message.channel.send({embed});
+            }
+            else if (isNaN(args.slice(1).join(""))) {
               embed.setDescription(`Non-number value entered.`)
               .addField("In order to set the number of pins, please enter a number!", `Do \`${configFile.prefix}corkboard pins <number>\` to set the pin threshold.`);
               return message.channel.send({embed});
@@ -179,19 +240,19 @@ module.exports = {
             });
 
             embed.setDescription(`Pin Threshold set.`);
-            embed.addField(`The pin threshold has now been set to: `, configFile.cbPinThreshold);
+            embed.addField(`The minimum pin threshold has now been set to: `, `${configFile.cbPinThreshold} pin(s)`);
             return message.channel.send({embed});
 
           default:
             // show general corkboard settings
             embed.setDescription(`Turns the CorkBoard feature on or off, changes the channel to show pinned messages, and changes the minimum number of pins for a post to show in the pin channel.`);
-            embed.addField("Change options with:", `on - turns on CorkBoard\noff - turns off CorkBoard\nchannel - sets the CorkBoard channel\npins - sets the number of pin reactions needed for a post to show in the corkboard channel`);
+            embed.addField("Change options with:", `on - turns on CorkBoard\noff - turns off CorkBoard\nchannel - sets the CorkBoard channel\ndemocratic - toggles Democratic Mode (react with 📌 to pin posts)\ninstapin - toggles InstaPin Mode (pin a message with "pin message")\npins - sets the number of pin reactions needed for a post to show in the corkboard channel`);
             switch (configFile.cbStatus) {
               case false:
-                embed.addField("CorkBoard:",  "`disabled`", true);
+                embed.addField("CorkBoard:",  "`disabled`", false);
                 break;
               case true:
-                embed.addField("CorkBoard:",  "`enabled`", true);
+                embed.addField("CorkBoard:",  "`enabled`", false);
                 break;
             }
             switch (configFile.cbChannel) {
@@ -202,7 +263,15 @@ module.exports = {
                 embed.addField(`CorkBoard Channel: `, `<#${configFile.cbChannel}>`, true);
                 break;
             }
-            embed.addField("Pin Threshold:", configFile.cbPinThreshold);
+            switch (configFile.cbPinMode) {
+              case "democratic":
+                embed.addField("Pin Mode: ", "`Democratic`", true);
+                embed.addField("Pin Reaction Threshold:", configFile.cbPinThreshold, true);
+                break;
+              case "instapin":
+                embed.addField("Pin Mode: ", "`InstaPin`", true);
+                break;
+            }
             return message.channel.send({embed});
         }
     }

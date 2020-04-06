@@ -1,16 +1,32 @@
+/*
+This event fires every time a message in any channel and in any server gets a
+new reaction. The code below checks for the pushpin emoji specifically for the
+corkboard, if it has been enabled. If a channel is set and Democratic Pin Mode is
+on, it will "pin" a message in the corkboard channel once a post receives more
+than the server's pin threshold. If the message is already in the corkboard, then
+this will update the number of pins the post received to reflect the original post's.
+*/
+
 const fs = require('fs');
 const discord = require("discord.js");
 
 module.exports = async (bot, reaction, user) => {
 
-    // check if corkboard is enabled for the server; if it's not, stop here
+    // check if the CorkBoard and Democratic Pin Mode is enabled for the server; if it's not, stop here
     const message = reaction.message;
     const configFile = require(`../../config/server/${message.guild.id}/config.json`);
     if (configFile.cbStatus == false) return;
+    else if (configFile.cbPinMode == "instapin") return;
 
-    // If the reaction isn't the pushpin emoji or if the user tries to pin a bot's message, stop here.
+    // If the reaction isn't the pushpin emoji or if the user tries to pin either their own or a bot's message, stop here.
     if (reaction.emoji.name !== '📌') return;
-    if (message.author.bot) return message.channel.send(`Sorry **${user.username}**, you cannot pin bot messages.`);
+    else if (message.author.bot) {
+      message.channel.send(`Sorry ${user}, you can't pin bot messages.`).then(async msg => {
+        await reaction.users.remove(user.id);
+        msg.delete({ timeout: 3000 });
+      });
+      return;
+    }
 
     // check if there's a valid corkboard channel, and if the channel is deleted, automatically turn it off and reset the channel to null
     if (configFile.cbChannel == null) return;
@@ -26,7 +42,15 @@ module.exports = async (bot, reaction, user) => {
 
     // look for pinned messages already in the corkboard channel with the message's ID.
     const fetchedMessages = await pinChannel.messages.fetch({ limit: 100 });
-    const pins = fetchedMessages.find(m => m.embeds[0].footer.text.endsWith(message.id));
+    let pins;
+    try {
+      pins = fetchedMessages.find(m => m.embeds[0].footer.text.endsWith(message.id));
+    }
+    catch (e) {
+      console.log(e);
+      message.channel.send(`Couldn't find the original pinned message in <#${configFile.cbChannel}>! Are there any non-embed messages in there...?`);
+      pins = undefined;
+    }
 
     // If there are, update the pin count on the embed.
     if (pins) {
@@ -51,7 +75,7 @@ module.exports = async (bot, reaction, user) => {
       // If the message doesn't meet the server-defined pin threshold, then stop.
       if (message.reactions.cache.get('📌').count < configFile.cbPinThreshold) return;
 
-      const image = message.attachments.size > 0 ? await extension(reaction, message.attachments.array()[0].url) : '';
+      const image = message.attachments.size > 0 ? await extension(message.attachments.array()[0].url) : '';
       if (image === '' && message.cleanContent.length < 1) return message.channel.send(`**${user.username}**, you cannot pin an empty message.`);
       const embed = new discord.MessageEmbed()
         .setColor(message.guild.member(message.author).displayHexColor)
@@ -69,8 +93,8 @@ module.exports = async (bot, reaction, user) => {
     }
 }
 
-// Here we add the this.extension function to check if there's anything attached to the message.
-function extension(reaction, attachment) {
+// Here we add the extension function to check if there's anything attached to the message.
+function extension(attachment) {
   const imageLink = attachment.split('.');
   const typeOfImage = imageLink[imageLink.length - 1];
   const image = /(jpg|jpeg|png|gif)/gi.test(typeOfImage);

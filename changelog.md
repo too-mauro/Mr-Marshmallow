@@ -1,6 +1,24 @@
 # Mr. Marshmallow Changelog
 This document serves as the complete changelog for Mr. Marshmallow's development. All versions listed here will record the changes that occur between versions uploaded to this repository.
 
+## Version 0.7
+- `quote` command works!
+  - Add, delete, get, and list quotes stored for the server! Purge or reset them if you want, but there's no going back!
+  - Import and export options currently in the works.
+  - Now uses .json files to store quotes, no longer .txt files
+  - Quote limit reduced from 500 to 300 per server to conserve storage/memory
+  - Quote character limit of 500 imposed for storage conservation
+  - *guildCreate* event updated to copy a base quotes.json file from the *config/bot* directory upon joining the server
+- `corkboard` has a new way to pin posts: **InstaPin Mode**! Pin a message through Discord's "Pin Message" option and the bot will pin it in the CorkBoard channel!
+  - New event file: *channelPinsUpdate*. Will pin a post only if InstaPin Mode is set and there's at least one pinned message in a given channel.
+  - Classic pin method (react with 📌) renamed to **Democratic Mode** to distinguish itself from the new mode.
+  - `corkboard` command updated for pin mode toggle. By default, Democratic Mode is set when the bot joins a server.
+  - *messageReactionAdd* and *messageReactionRemove* updated to check for non-embedded messages in the corkboard channel.
+- `userinfo` command updated to add roles, role count, and server owner distinction (if applicable) to embedded message
+- `evaluate` command updated to write evaluated code longer than Discord's message limit to a .txt file in the *config/bot* directory
+- New command in the **fun** category: `8ball`! Ask the 8-ball a question and you'll receive an answer!
+- `corkboard` and `doormat` commands updated to allow case-insensitivity when setting options
+
 ## Version 0.6
 - The DoorMat and CorkBoard features fully work!
   - *guildMemberAdd*, *guildMemberRemove*, *messageReactionAdd*, and *messageReactionRemove* events all work properly.
@@ -12,7 +30,7 @@ This document serves as the complete changelog for Mr. Marshmallow's development
 - *guildCreate*, *guildDelete*, and *guildUnavailable* events updated to send embedded messages about server information
 
 ## Version 0.5.1
-- Fixed the new prefix argument in the `prefix` command
+- Updated the `prefix` command to adjust the new prefix to lowercase automatically (prevents accidental prefix "lock-out")
   - Allowed for setting capital letter prefixes, which couldn't be called as the bot automatically put bot command messages as lowercase.
 
 ## Version 0.5
@@ -38,7 +56,7 @@ This document serves as the complete changelog for Mr. Marshmallow's development
   - `ping`, `uptime`, and `report` from "miscellaneous" category (first two commands merged into `botinfo`)
   - `test` moved to "owner" category
 - Added a new category: **games**
-- Per-server settings partially work. Custom prefixes can be set through the `settings* command, but planned features CorkBoard and DoorMat don't work just yet.
+- Per-server settings partially work. Custom prefixes can be set through the `settings` command, but planned features CorkBoard and DoorMat don't work just yet.
 - More functionality added with new events (creates configuration data when it joins a server).
 
 ## Version 0.3

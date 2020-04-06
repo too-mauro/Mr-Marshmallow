@@ -13,7 +13,7 @@ module.exports = {
     config: {
         name: "doormat",
         aliases: ["dm"],
-        usage: "<on/off/channel/welcome/leave>",
+        usage: ["on", "off", "channel <channel>", "welcome <message>", "leave <message>"],
         category: "settings",
         description: "Configures the DoorMat feature for this server."
     },
@@ -28,6 +28,7 @@ module.exports = {
             .setColor(orange)
             .setTitle(`${bot.user.username} DoorMat Settings`);
 
+        if (args[0] && isNaN(args[0])) { args[0] = args[0].toLowerCase(); }
         switch (args[0]) {
           case 'on':
             if (configFile.dmStatus == true) {
@@ -121,7 +122,7 @@ module.exports = {
               return message.channel.send({embed});
             }
             else {
-              var channel = message.guild.channels.cache.find(textChannel => textChannel.name === args[1]);
+              var channel = message.guild.channels.cache.find(textChannel => textChannel.name === args[1].toLowerCase());
               var id = channel ? channel.id : null;
               if (id == null) {
                 embed.setDescription(`No channel found.`);
