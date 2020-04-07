@@ -1,6 +1,6 @@
 {
   "name": "mr-marshmallow",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "description": "A sweet marshmallow-based Discord bot made for fun!",
   "main": "index.js",
   "repository": {
