@@ -11,6 +11,10 @@ const discord = require("discord.js");
 
 module.exports = async (bot, channel, time) => {
 
+    // First, check if the time the pins was updated matches the time the last pin was added to the channel.
+    // This ensures this event won't run further if a message was unpinned.
+    if (time.getTime() !== channel.lastPinTimestamp) return;
+    
     // get server's config data with channel.guild.id and use the ID in the file path
     // check if the CorkBoard and Insta-Pin Mode is enabled for the server; if it's not, stop here
     const configFile = require(`../../config/server/${channel.guild.id}/config.json`);
