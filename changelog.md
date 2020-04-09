@@ -59,11 +59,8 @@ This document serves as the complete changelog for Mr. Marshmallow's development
 - Per-server settings partially work. Custom prefixes can be set through the `settings` command, but planned features CorkBoard and DoorMat don't work just yet.
 - More functionality added with new events (creates configuration data when it joins a server).
 
-## Version 0.3
-Kinda got lost during development. Sorry!
-
-## Version 0.2
-Kinda got lost during development. Sorry!
+## Versions 0.2 and 0.3
+These versions have been rolled into v0.4 as one huge release.
 
 ## Version 0.1
 - First version of Mr. Marshmallow!
