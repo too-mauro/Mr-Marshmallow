@@ -12,7 +12,8 @@ module.exports = {
         name: "load",
         description: "Loads a new bot command. Restricted to the bot owner.",
         category: "owner",
-        usage: "<command>"
+        usage: ["<command>"],
+        aliases: ["l"]
     },
     run: async (bot, message, args) => {
 
@@ -22,6 +23,7 @@ module.exports = {
         return message.channel.send(`**${message.author.username}**, please provide a new command to load!`);
       }
 
+      args[0] = args[0].toLowerCase();
       if (bot.commands.get(args[0]) || bot.commands.get(bot.aliases.get(args[0]))) {
         return message.channel.send(`A command or alias with the name \`${args[0]}\` already exists!`);
       }
@@ -43,7 +45,7 @@ module.exports = {
       }
       catch (e) {
         console.log(e);
-        return message.channel.send(`Couldn't unload the \`${command.config.name}\` command.\n\`\`\`ERROR: ${e.message}\`\`\``);
+        return message.channel.send(`Couldn't load the \`${args[0]}\` command.\n\`\`\`ERROR: ${e.message}\`\`\``);
       }
       if (found == 0) return message.channel.send(`A command with the name \`${args[0]}\` could not be found!`);
       else return message.channel.send(`Successfully loaded the \`${args[0]}\` command!`);

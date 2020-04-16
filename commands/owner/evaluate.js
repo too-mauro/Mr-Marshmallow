@@ -6,6 +6,7 @@ executed by the bot owner defined in the config/bot/settings.json file.
 const { ownerID } = require("../../config/bot/settings.json");
 const { inspect } = require("util");
 const fs = require("fs");
+const evalTxt = "./config/bot/eval.txt";
 
 module.exports = {
     config: {
@@ -23,24 +24,24 @@ module.exports = {
           return message.channel.send(`**${message.author.username}**, please enter some code to evaluate!`);
         }
 
-        let toEval = args.join(" ").toLowerCase();
+        let toEval = args.join(" ");
         try {
         	let evaluated = inspect(eval(toEval, { depth: 0 }));
 
           let hrStart = process.hrtime();
           let hrDiff = process.hrtime(hrStart);
-          if (evaluated.length < 1950) {
-            return message.channel.send(`\`\`\`javascript\n${evaluated}\n\`\`\`*(Executed in ${hrDiff[0] > 0 ? `${hrDiff[0]}s ` : ''}${(hrDiff[1] / 1000000).toFixed(3)}ms.)*`);
+          if (evaluated.length <= 1950) {
+            return message.channel.send(`🕑 **${hrDiff[0] > 0 ? `${hrDiff[0]}s ` : ''}${(hrDiff[1] / 1000000).toFixed(3)}ms**\n\`\`\`javascript\n${evaluated}\n\`\`\``);
           }
           else {
-            fs.writeFile("./config/bot/eval.txt", evaluated, 'utf8', (err) => {
+            fs.writeFile(evalTxt, evaluated, 'utf8', (err) => {
               if (err) {
                 console.log(err);
                 return message.channel.send(`Sorry **${message.author.username}**, I couldn't write the evaluated code to file!`);
               }
-              console.log(evaluated);
-              return message.channel.send("The evaluated code is longer than Discord's message limit, but the result is in the console's logs. In case you can't access that now, I made a text file containing the same data.", { files: ["./config/bot/eval.txt"] } );
             });
+            console.log(evaluated);
+            return message.channel.send(`🕑 **${hrDiff[0] > 0 ? `${hrDiff[0]}s ` : ''}${(hrDiff[1] / 1000000).toFixed(3)}ms**\nThe evaluated code is longer than Discord's message limit, but the result is in the console's logs. In case you can't access that now, I made a text file containing the same data.`, { files: [evalTxt] } );
           }
         }
         catch (e) {

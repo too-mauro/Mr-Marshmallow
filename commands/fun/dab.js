@@ -8,7 +8,7 @@ module.exports = {
   config: {
       name: "dab",
       description: "Get the bot to dab or dab on someone!",
-      usage: "(@mention)",
+      usage: ["(@mention)"],
       category: "fun",
       aliases: ["d"]
   },

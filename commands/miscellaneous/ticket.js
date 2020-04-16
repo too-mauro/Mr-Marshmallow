@@ -8,7 +8,7 @@ module.exports = {
   config: {
       name: "ticket",
       description: "Got something you want to report? Shoot a ticket with this command!",
-      usage: "<message>",
+      usage: ["<message>"],
       aliases: ["t", "feedback", "fb"],
       category: "miscellaneous"
   },

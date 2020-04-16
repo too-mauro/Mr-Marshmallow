@@ -10,7 +10,8 @@ module.exports = {
         name: "shutdown",
         description: "Shuts down the bot. Restricted to the bot owner.",
         category: "owner",
-        aliases: ["sd", "restart"]
+        aliases: ["sd", "restart"],
+        usage: []
     },
     run: async (bot, message, args) => {
 
@@ -34,7 +35,7 @@ module.exports = {
               catch(e) { return message.channel.send(`Whoops, something went wrong! Here's the error: ${e.message}`); }
             }
             if (collected.first().content.toLowerCase() === 'no' || collected.first().content.toLowerCase() === 'n') {
-              return message.channel.send("The operation\'s been cancelled.");
+              return message.channel.send("The operation's been cancelled.");
             }
             })
             .catch(() => {

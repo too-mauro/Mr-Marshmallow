@@ -12,7 +12,7 @@ module.exports = {
     config: {
         name: "botinfo",
         aliases: ["bi", "binfo"],
-        usage: "",
+        usage: [],
         category: "miscellaneous",
         description: "Gets information about Mr. Marshmallow!"
     },
@@ -23,21 +23,32 @@ module.exports = {
       const embed = new discord.MessageEmbed()
           .setColor(cream)
           .setTitle(`${bot.user.username} Info`)
-          .setThumbnail(bot.user.displayAvatarURL())
-          .setDescription(`Hanging out with ${bot.users.cache.size} users on ${bot.guilds.cache.size} servers!`)
-          .addField("Current Uptime :clock1:", `${duration(bot.uptime)}`)
-          .addField("API Latency:", `${Math.round(bot.ws.ping)} ms`, true)
-          .addField("Server Prefix:", `\` ${configFile.prefix} \``, true)
-          .setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
+          .setDescription("Loading information...");
 
-      return message.channel.send({embed});
+      message.channel.send({embed}).then(m => {
+        let mPing = m.createdTimestamp - message.createdTimestamp;
+        embed.setThumbnail(bot.user.displayAvatarURL())
+            .setDescription(`Hanging out with ${bot.users.cache.size} users on ${bot.guilds.cache.size} servers!`)
+            .addField("Current Uptime 🕐", duration(bot.uptime), false)
+            .addField("Bot Latency:", `${mPing} ms`, true)
+            .addField("API Latency:", `${Math.round(bot.ws.ping)} ms`, true)
+            .addField("Server Prefix:", `\` ${configFile.prefix} \``, true)
+            .setFooter(bot.user.username, bot.user.displayAvatarURL());
 
-      function duration(ms) {
-          const sec = Math.floor((ms / 1000) % 60).toString()
-          const min = Math.floor((ms / (1000 * 60)) % 60).toString()
-          const hrs = Math.floor((ms / (1000 * 60 * 60)) % 60).toString()
-          if (hrs < 1) return `${min.padStart(2, '0')}m:${sec.padStart(2, '0')}s`;
-          return `${hrs.padStart(2, '0')}h:${min.padStart(2, '0')}m:${sec.padStart(2, '0')}s`;
-      }
+        return m.edit({embed});
+      });
+
     }
+}
+
+function duration(ms) {
+    const sec = Math.floor((ms / 1000) % 60).toString();
+    const min = Math.floor((ms / (1000 * 60)) % 60).toString();
+    const hrs = Math.floor((ms / (1000 * 60 * 60)) % 60).toString();
+    const days = Math.floor((ms / (1000 * 60 * 60 * 24)) % 60).toString();
+    if (days < 1) {
+      if (hrs < 1) return `${min.padStart(2, '0')}m:${sec.padStart(2, '0')}s`;
+      return `${hrs}h:${min.padStart(2, '0')}m:${sec.padStart(2, '0')}s`;
+    }
+    return `${days}d:${hrs % 24}h:${min.padStart(2, '0')}m:${sec.padStart(2, '0')}s`;
 }

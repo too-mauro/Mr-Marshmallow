@@ -13,7 +13,7 @@ module.exports = {
     config: {
         name: "prefix",
         aliases: ["p", "pre"],
-        usage: "<prefix>",
+        usage: ["<prefix>"],
         category: "settings",
         description: "Sets the server's prefix."
     },

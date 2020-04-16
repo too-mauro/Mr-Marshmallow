@@ -11,7 +11,8 @@ module.exports = {
         name: "unload",
         description: "Unloads a bot command. Restricted to the bot owner.",
         category: "owner",
-        usage: "<command>"
+        usage: ["<command>"],
+        aliases: ["unl", "ul"]
     },
     run: async (bot, message, args) => {
 
@@ -21,6 +22,7 @@ module.exports = {
           return message.channel.send(`**${message.author.username}**, please provide a command to unload!`);
         }
 
+        args[0] = args[0].toLowerCase();
         let command = bot.commands.get(args[0]) || bot.commands.get(bot.aliases.get(args[0]));
         if (!command) {
           return message.channel.send(`A command or alias with the name \`${args[0]}\` doesn't exist!`);

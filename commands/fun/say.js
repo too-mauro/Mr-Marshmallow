@@ -8,7 +8,7 @@ module.exports = {
       name: "say",
       description: "Repeat whatever you say.",
       aliases: ["s", "parrot"],
-      usage: "<text>",
+      usage: ["<text>"],
       category: "fun"
   },
   run: async (bot, message, args) => {

@@ -7,7 +7,7 @@ module.exports = {
     config: {
         name: "riddle",
         aliases: ["riddlemethis", "rmt"],
-        usage: "(start), (end)",
+        usage: ["(start)", "(end)", "(join)"],
         category: "games",
         description: "Solve some riddles either against other server members or together!"
     },

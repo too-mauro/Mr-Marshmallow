@@ -7,7 +7,7 @@ module.exports = {
     config: {
         name: "trivia",
         aliases: ["triv", "t"],
-        usage: "(start), (end)",
+        usage: ["(start)", "(end)", "(join)"],
         category: "games",
         description: "Go against other server members in a game of trivia!"
     },

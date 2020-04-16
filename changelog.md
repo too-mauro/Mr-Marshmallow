@@ -1,7 +1,21 @@
 # Mr. Marshmallow Changelog
 This document serves as the complete changelog for Mr. Marshmallow's development. All versions listed here will record the changes that occur between versions uploaded to this repository.
 
-## Version 0.7
+## v0.7.2
+- `flip` command renamed to `coinflip` for clarity; original name is now an alias
+- New commands in the "fun" category:
+  - `joke`: tells a random pun!
+  - `reverse`: reverses whatever you say!
+- `serverinfo` updated to include server boost counts and levels!
+- `botinfo` command updated to show bot latency and uptime in days
+- `roll` command updated to allow rolling 100-sided die; code slightly tweaked
+- `userinfo` command code cleaned up
+- `evaluate` command code slightly tweaked; evaluation time now shows when result is longer than Discord message limit
+
+## v0.7.1
+- *channelPinsUpdate* event fixed to prevent the code from running when unpinning a message from a channel
+
+## v0.7
 - `quote` command works!
   - Add, delete, get, and list quotes stored for the server! Purge or reset them if you want, but there's no going back!
   - Import and export options currently in the works.
@@ -19,7 +33,7 @@ This document serves as the complete changelog for Mr. Marshmallow's development
 - New command in the **fun** category: `8ball`! Ask the 8-ball a question and you'll receive an answer!
 - `corkboard` and `doormat` commands updated to allow case-insensitivity when setting options
 
-## Version 0.6
+## v0.6
 - The DoorMat and CorkBoard features fully work!
   - *guildMemberAdd*, *guildMemberRemove*, *messageReactionAdd*, and *messageReactionRemove* events all work properly.
 - Forgot your server's prefix? Don't worry, ping the bot and it will tell you!
@@ -29,11 +43,11 @@ This document serves as the complete changelog for Mr. Marshmallow's development
 - `invite` command now shows a link to the support server and to the GitHub repository (that's right here!)
 - *guildCreate*, *guildDelete*, and *guildUnavailable* events updated to send embedded messages about server information
 
-## Version 0.5.1
+## v0.5.1
 - Updated the `prefix` command to adjust the new prefix to lowercase automatically (prevents accidental prefix "lock-out")
   - Allowed for setting capital letter prefixes, which couldn't be called as the bot automatically put bot command messages as lowercase.
 
-## Version 0.5
+## v0.5
 - Fixed `userinfo` command (getting user mention didn't work, now it does)
 - `settings` command removed in favor of separate `prefix`, `doormat`, and `corkboard` commands
 - Both DoorMat welcome and leave messages can be set.
@@ -44,7 +58,7 @@ This document serves as the complete changelog for Mr. Marshmallow's development
 - All commands have an information blurb at the top of their respective files
 - `reload` command works! No need to restart the bot after every change
 
-## Version 0.4 (in "experimental" branch)
+## v0.4 (in "experimental" branch)
 - Uses v12.x of Discord.js (upgraded from v11.x) and now requires Node.js v12 or higher
 - All necessary configuration files for the bot to work properly have been moved to the *config/bot* directory.
 - Custom data for each joined server is now stored in its own folder (listed by its ID) in the *config/server* directory.
@@ -59,10 +73,10 @@ This document serves as the complete changelog for Mr. Marshmallow's development
 - Per-server settings partially work. Custom prefixes can be set through the `settings` command, but planned features CorkBoard and DoorMat don't work just yet.
 - More functionality added with new events (creates configuration data when it joins a server).
 
-## Versions 0.2 and 0.3
-These versions have been rolled into v0.4 as one huge release.
+## v0.2 and v0.3
+These versions have been rolled into v0.4 as one huge update.
 
-## Version 0.1
+## v0.1
 - First version of Mr. Marshmallow!
 - Using Discord.js v11.x
 - Most commands inherited from MenuDoc's Discord.JS-Tutorial repo
