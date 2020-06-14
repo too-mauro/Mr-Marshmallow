@@ -9,7 +9,7 @@ module.exports = {
   config: {
       name: "joke",
       description: "I'll tell you a joke, why not?",
-      usage: [],
+      usage: "",
       category: "fun",
       aliases: ["j", "pun"]
   },
@@ -18,7 +18,11 @@ module.exports = {
     try {
       let response = await fetch(jokeAPI);
       let json = await response.json();
-      return message.channel.send(`${json.setup}\n${json.punchline}`);
+      message.channel.send(json.setup).then(msg => {
+        setTimeout(function () {
+          msg.edit(`${json.setup}\n${json.punchline}`);
+        }, 2000);
+      });
     }
     catch (e) {
       console.log(e);

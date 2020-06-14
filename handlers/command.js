@@ -1,3 +1,9 @@
+/*
+This file loads all the commands found in the /commands directory into memory.
+There are multiple category sub-directories, so it goes through each one and
+adds all the command files within said directories into memory.
+*/
+
 const { readdirSync } = require("fs");
 const { getCategories } = require("../config/bot/categories.js");
 
@@ -8,6 +14,7 @@ module.exports = (bot) => {
             let pull = require(`../commands/${dirs}/${file}`);
             bot.commands.set(pull.config.name, pull);
             if (pull.config.aliases) pull.config.aliases.forEach(a => bot.aliases.set(a, pull.config.name));
+            delete require.cache[require.resolve(`../commands/${dirs}/${file}`)];
         }
     });
 }

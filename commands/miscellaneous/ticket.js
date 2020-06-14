@@ -2,14 +2,15 @@
 This command allows users to send suggestions or errors to the bot developer.
 */
 
-const { ticketChannel } = require('../../config/bot/settings.json');
+const fs = require("fs");
+const botTicketChannel = JSON.parse(fs.readFileSync("./config/bot/settings.json", "utf8")).channels.ticket;
 
 module.exports = {
   config: {
       name: "ticket",
       description: "Got something you want to report? Shoot a ticket with this command!",
-      usage: ["<message>"],
-      aliases: ["t", "feedback", "fb"],
+      usage: "<message>",
+      aliases: ["tick", "feedback", "fb"],
       category: "miscellaneous"
   },
   run: async (bot, message, args) => {
@@ -21,19 +22,17 @@ module.exports = {
 
     // grabs the message, checks if the feedback channel exists, sends the message if it does, and tells the user it was a success
     let text = args.join(" ");
-    let tChannel = bot.channels.cache.get(ticketChannel);
-    if (!tChannel.deleted) {
-      if (message.attachments.first()) {
-        tChannel.send(`---\n**${message.author.tag}**:\n` + text, {files: [message.attachments.first().url]});
-      }
-      else {
-        tChannel.send(`---\n**${message.author.tag}**:\n` + text);
-      }
-      message.reply("your ticket request has been sent and will be received shortly. Thanks!").catch(console.error);
-    }
-    else {
+    let tChannel = bot.channels.cache.get(botTicketChannel);
+    if (!tChannel) {
       return message.channel.send("Whoops! We couldn't send your request...!");
     }
 
+    if (message.attachments.first()) {
+      tChannel.send(`---\n**${message.author.tag}**:\n` + text, {files: [message.attachments.first().url]});
+    }
+    else {
+      tChannel.send(`---\n**${message.author.tag}**:\n` + text);
+    }
+    return message.reply("your ticket request has been sent and will be received shortly. Thanks!").catch(console.error);
   }
 }

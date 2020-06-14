@@ -12,7 +12,7 @@ module.exports = {
         name: "serverinfo",
         description: "Gets information about the server.",
         category: "miscellaneous",
-        usage: [],
+        usage: "",
         aliases: ["si", "sinfo", "serverdesc"]
     },
     run: async (bot, message, args) => {
@@ -28,11 +28,11 @@ module.exports = {
           .setFooter(bot.user.username, bot.user.displayAvatarURL());
 
       if (message.guild.premiumTier >= 1) {
-        embed.setDescription(`**${message.guild.premiumSubscriptionCount} server boosts (Level ${message.guild.premiumTier})**`);
+        embed.setDescription(`**${message.guild.premiumSubscriptionCount}** server boosts (**Level ${message.guild.premiumTier}**)`);
       }
       else {
-        if (message.guild.premiumSubscriptionCount == 1) embed.setDescription(`**${message.guild.premiumSubscriptionCount} server boost**`);
-        else embed.setDescription(`**${message.guild.premiumSubscriptionCount} server boosts**`);
+        if (message.guild.premiumSubscriptionCount == 1) embed.setDescription(`**${message.guild.premiumSubscriptionCount}** server boost`);
+        else embed.setDescription(`**${message.guild.premiumSubscriptionCount}** server boosts`);
       }
 
       return message.channel.send(embed);

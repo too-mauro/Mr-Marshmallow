@@ -1,12 +1,19 @@
 {
-	"token": "(bot token here)",
-	"ownerID": "(bot owner ID here)",
-	"logChannel": "(log channel ID here)",
-	"startupMessage": true,
-	"ticketChannel": "(ticket channel ID here)",
-	"defaultPrefix": "m!",
-	"defaultJoinMessage": "Hiya username, welcome to servername!",
-	"defaultLeaveMessage": "username just left the server.",
-	"defaultPinThreshold": 5,
-	"defaultMaxQuotes": 300
+	"ownerID": "309411734081372162",
+	"startupMessageEnabled": false,
+	"channels": {
+		"log": "566792124100771881",
+		"ticket": "632788916969406465"
+	},
+	"defaults": {
+		"prefix": "m!",
+		"joinMessage": "Hiya username, welcome to servername!",
+		"leaveMessage": "username just left the server.",
+		"banMessage": "username has been banned from the server!",
+		"pinMode": "democratic",
+		"pinThreshold": 5,
+		"maxQuotes": 300,
+		"maxBlackListSize": 50,
+		"warnMessage": "Nice try username, but you're not allowed to say that. <:marshAngry:696122058245013555>"
+	}
 }

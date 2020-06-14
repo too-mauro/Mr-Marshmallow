@@ -1,38 +1,34 @@
+/*
+This event fires every time a user joins the server. This checks if the DoorMat
+feature is on and has a channel set, and if both are true, sends the welcome
+message set in the server's configuration file.
+*/
+
 const fs = require("fs");
 
 module.exports = async (bot, member) => {
 
+    // check if the bot is the user joining the server
+    if (member.user == bot.user) return;
+
     // get the server's current configurations
-    const configFile = require(`../../config/server/${member.guild.id}/config.json`);
+    const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${member.guild.id}/config.json`, 'utf8'));
 
     // check if doormat is enabled for the server; if it's not, stop here
-    if (configFile.dmStatus == false) return;
+    if (!serverConfig.doormat.enabled) return;
 
-    // check if there's a valid doormat channel, and if the channel is deleted, automatically turn it off and reset the channel to null
-    if (configFile.dmChannel == null) return;
-    let welcomeChannel = member.guild.channels.cache.find(c => c.id === configFile.dmChannel);
+    // check if there's a valid doormat channel, and if the channel doesn't exist, automatically reset the channel to null
+    if (!serverConfig.doormat.channelID) return;
+    let welcomeChannel = member.guild.channels.cache.find(c => c.id === serverConfig.doormat.channelID);
     if (!welcomeChannel) {
-        configFile.dmStatus = false;
-        configFile.dmChannel = null;
-        fs.writeFile(`./config/server/${member.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
-          if (err) console.log(err);
-        });
-        return console.log(`Doormat feature turned off and channel has been reset for ${member.guild.name} (ID: ${member.guild.id})`);
+        serverConfig.doormat.channelID = null;
+        return fs.writeFileSync(`./config/server/${member.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
     }
 
     // check if the message has membername, servername, or both and replace them with a member mention or guild name
-    if (configFile.welcomeMessage.includes("username")) {
-      configFile.welcomeMessage = configFile.welcomeMessage.replace(/username/g, `${member.user}`);
-    }
-    if (configFile.welcomeMessage.includes("servername")) {
-      configFile.welcomeMessage = configFile.welcomeMessage.replace(/servername/g, `**${member.guild.name}**`);
-    }
+    let welcomeMessage = serverConfig.doormat.welcomeMessage;
+    welcomeMessage = welcomeMessage.replace(/username/g, member.user).replace(/servername/g, `**${member.guild.name}**`);
 
-    try {
-      welcomeChannel.send(configFile.welcomeMessage);
-    }
-    catch (e) {
-      console.log(`Error sending welcome message in ${member.guild.name}: `, e);
-    }
-
+    try { welcomeChannel.send(welcomeMessage); }
+    catch (e) { console.log(`Couldn't send the welcome message in ${guild.name}!\n`, e); }
 }

@@ -7,8 +7,8 @@ use that value to modify the resulting value.
 module.exports = {
   config: {
       name: "roll",
-      description: "Roll some die and see what you get!",
-      usage: ["6", "12", "20 <optional modifier>", "100 <optional modifier>"],
+      description: "Roll some dice and see what you get!",
+      usage: "(6) (12) (20 <optional modifier>) (100 <optional modifier>)",
       category: "fun",
       aliases: ["r"]
   },
@@ -53,9 +53,9 @@ function dRoll(numFaces, modifier) {
   if (!modifier) return [rollValue, "no"];
   var modValue = modifier.split().join("").slice(1);
 
-  // check if the first character is either a '+' or '-', and if the stuff after that is a number
-  // otherwise, treat it as an invalid modifier and return just the roll's value
-  // if the value is a number and the result exceeds the number of faces or goes below 1, return the maximum or minimum value
+  /* check if the first character is either a '+' or '-', and if the stuff after that is a number.
+  otherwise, treat it as an invalid modifier and return just the roll's value.
+  if the value is a number and the result exceeds the number of faces or goes below 1, return the maximum or minimum value */
   if (isNaN(modifier) || isNaN(modValue)) return [rollValue, "invalid"];
   modValue = Math.trunc(modValue);
   switch (modifier.charAt(0)) {
@@ -72,5 +72,4 @@ function dRoll(numFaces, modifier) {
       if (parseInt(rollValue) + parseInt(modValue) > numFaces) return [numFaces, modifier];
       else return [parseInt(rollValue) + parseInt(modValue), `+${modifier}`];
   }
-
 }

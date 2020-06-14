@@ -7,13 +7,13 @@ module.exports = {
   config: {
       name: "coinflip",
       description: "Flip a coin!",
-      usage: [],
+      usage: "",
       category: "fun",
       aliases: ["f", "flip"]
   },
   run: async (bot, message, args) => {
 
-    var headsOrTails = Math.floor(Math.random() * (Math.floor(2) - Math.ceil(1) + 1) ) + Math.ceil(1);
+    let headsOrTails = Math.floor(Math.random() * (Math.floor(2) - Math.ceil(1) + 1) ) + Math.ceil(1);
 
     switch(headsOrTails) {
       case 1:
@@ -23,6 +23,7 @@ module.exports = {
         return message.channel.send(":white_circle: ` Tails `");
 
       default:
+        // This is here in the event something wrong happens. Who knows, there's a possibility!
         console.log("Flip command had an error!");
         return message.channel.send("Looks like I got a weird coin... Please try again later!");
     }

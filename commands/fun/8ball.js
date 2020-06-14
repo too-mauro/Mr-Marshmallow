@@ -1,6 +1,6 @@
 /*
-This command reads from a pre-made response file and randomly picks a response
-from it, then responds to the question the user "asks" with it.
+This command responds with a randomly-picked response from the 8ball.json
+file in the config/bot directory.
 */
 
 const fs = require("fs");
@@ -9,7 +9,7 @@ module.exports = {
   config: {
       name: "8ball",
       description: "Ask the 8-ball a question!",
-      usage: ["<question>"],
+      usage: "<question>",
       category: "fun",
       aliases: ["8", "ball"]
   },
@@ -19,18 +19,21 @@ module.exports = {
         return message.channel.send(`**${message.author.username}**, please ask the 8-ball a full question!`);
       }
 
-      fs.readFile('./config/bot/8ballresponse.json', 'utf8', (err, data) => {
-        if (err) {
-          console.log(err);
-          return message.channel.send("Sorry, looks like the 8-ball is on the fritz right now! Please try again later.");
-        }
-        else {
-          var file = JSON.parse(data);
-          let response = file.ball[(Math.floor(Math.random() * (Math.floor(file.ball.length) - Math.ceil(1) + 1) ) + Math.ceil(1)) - 1].response;
+      let question = args.join(" ");
 
-          return message.channel.send(`<:marshThink:696133701142315068>  You asked: "*${args.join(" ")}*"\n:8ball:  8-Ball's Response: "**${response}**"`);
-        }
+      message.channel.send(`<:marshThink:696133701142315068>  "${question}"\n:8ball:  *(shake) (shake) (shake)*`).then(msg => {
+        fs.readFile("./config/bot/8ball.json", 'utf8', (err, data) => {
+          if (err) {
+            console.log(err);
+            return msg.channel.send("Sorry, looks like the 8-ball is on the fritz right now! Please try again later.");
+          }
+          let responses = JSON.parse(data).responses;
+          let answer = responses[(Math.floor(Math.random() * (Math.floor(responses.length) - Math.ceil(1) + 1) ) + Math.ceil(1)) - 1];
+
+          setTimeout(function () {
+            msg.edit(`<:marshThink:696133701142315068>  "${question}"\n:8ball:  **${answer}**`);
+          }, 1000);
+        });
       });
-
   }
 }

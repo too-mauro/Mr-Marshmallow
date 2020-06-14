@@ -8,23 +8,23 @@ doesn't have either from running it.
 const fs = require("fs");
 const discord = require("discord.js");
 const { orange } = require("../../config/bot/colors.json");
-const { defaultPrefix } = require("../../config/bot/settings.json");
 
 module.exports = {
     config: {
         name: "corkboard",
         aliases: ["cb"],
-        usage: ["on", "off", "channel <channel>", "pins <number>"],
+        usage: "(on) (off) (channel <channel>) (pins <number>) (nsfw) (blacklist <channel>)",
         category: "settings",
-        description: "Configures the CorkBoard feature for this server."
+        description: "Configures the CorkBoard feature for this server. Requires **Manage Server** permission."
     },
     run: async (bot, message, args) => {
 
-        if (!message.guild.member(message.author).hasPermission("MANAGE_SERVER") || !message.guild.member(message.author).hasPermission("ADMINISTRATOR")) {
+        if (!message.guild.member(message.author).hasPermission("MANAGE_GUILD") || !message.guild.member(message.author).hasPermission("ADMINISTRATOR")) {
           return message.channel.send(`**${message.author.username}**, you need to have the \`Manage Server\` or \`Administrator\` permissions to use this command!`);
         }
 
-        let configFile = require(`../../config/server/${message.guild.id}/config.json`);
+        let serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
+        let serverBlacklist = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/blacklist.json`, 'utf8'));
         const embed = new discord.MessageEmbed()
             .setColor(orange)
             .setTitle(`${bot.user.username} CorkBoard Settings`);
@@ -32,13 +32,13 @@ module.exports = {
         if (args[0] && isNaN(args[0])) { args[0] = args[0].toLowerCase(); }
         switch (args[0]) {
           case 'on':
-            if (configFile.cbStatus == true) {
+            if (serverConfig.corkboard.enabled) {
               embed.setDescription(`**CorkBoard already enabled.**`);
-              embed.addField(`CorkBoard already enabled for this server.`, `If you would like to turn it off, do \`${configFile.prefix}corkboard off\`.`);
+              embed.addField(`CorkBoard already enabled for this server.`, `If you would like to turn it off, do \`${serverConfig.prefix}corkboard off\`.`);
               return message.channel.send({embed});
             }
-            configFile.cbStatus = true;
-            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
+            serverConfig.corkboard.enabled = true;
+            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
               if (err) {
                 console.log(err);
                 return message.channel.send("Something went wrong while trying to turn on the CorkBoard feature! Please try again later.");
@@ -46,22 +46,22 @@ module.exports = {
             });
 
             embed.setDescription(`**CorkBoard enabled.**`);
-            if (configFile.cbChannel !== null && !configFile.cbChannel.deleted) {
+            if (serverConfig.corkboard.channelID !== null && !serverConfig.corkboard.channelID.deleted) {
               embed.addField(`The CorkBoard feature is now enabled.`, `A corkboard channel has already been set, so you're ready to go!`);
             }
             else {
-              embed.addField(`The CorkBoard feature is now enabled.`, `A corkboard channel has not been set yet, so please set one with \`${configFile.prefix}corkboard channel <channel mention>\`.`);
+              embed.addField(`The CorkBoard feature is now enabled.`, `A corkboard channel has not been set yet, so please set one with \`${serverConfig.prefix}corkboard channel <channel mention>\`.`);
             }
             return message.channel.send({embed});
 
           case 'off':
-            if (configFile.cbStatus == false) {
+            if (!serverConfig.corkboard.enabled) {
               embed.setDescription(`**CorkBoard already disabled.**`);
-              embed.addField(`The CorkBoard feature is already disabled for this server.`, `If you would like to turn it on, do \`${configFile.prefix}corkboard on\`.`);
+              embed.addField(`The CorkBoard feature is already disabled for this server.`, `If you would like to turn it on, do \`${serverConfig.prefix}corkboard on\`.`);
               return message.channel.send({embed});
             }
-            configFile.cbStatus = false;
-            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
+            serverConfig.corkboard.enabled = false;
+            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
               if (err) {
                 console.log(err);
                 return message.channel.send("Something went wrong while trying to turn off the CorkBoard feature! Please try again later.");
@@ -69,21 +69,21 @@ module.exports = {
             });
 
             embed.setDescription(`**CorkBoard disabled.**`);
-            embed.addField(`The CorkBoard feature is disabled for this server.`, `If you would like to turn it on again, do \`${configFile.prefix}corkboard on\`.`);
+            embed.addField(`The CorkBoard feature is disabled for this server.`, `If you would like to turn it on again, do \`${serverConfig.prefix}corkboard on\`.`);
             return message.channel.send({embed});
 
           case 'channel':
             // Show the general help message for the channel argument.
             if (!args.slice(1) || args.slice(1).length < 1) {
               embed.setDescription(`Sets the channel for pinned messages to appear.`);
-              switch (configFile.cbChannel) {
+              switch (serverConfig.corkboard.channelID) {
                 case null:
                   embed.addField("Current CorkBoard Channel:", `**None set!**`);
                   break;
                 default:
-                  embed.addField("Current CorkBoard Channel:", `<#${configFile.cbChannel}>`);
+                  embed.addField("Current CorkBoard Channel:", `<#${serverConfig.corkboard.channelID}>`);
               }
-              embed.addField("To update:", `\`${configFile.prefix}corkboard channel <channel name/mention>\``);
+              embed.addField("To update:", `\`${serverConfig.prefix}corkboard channel <channel mention>\``);
               return message.channel.send({embed});
             }
 
@@ -106,13 +106,13 @@ module.exports = {
                 embed.addField(`You cannot set a non-text channel to be the CorkBoard channel!`, `Please try again.`, true);
                 return message.channel.send({embed});
               }
-              configFile.cbChannel = channelID;
+              serverConfig.corkboard.channelID = channelID;
 
               // If the CorkBoard is off, automatically turn it on.
-              if (configFile.cbStatus == false) configFile.cbStatus = true;
+              if (!serverConfig.corkboard.enabled) serverConfig.corkboard.enabled = true;
 
               // Save the new settings to the server's config.json file.
-              fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
+              fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
                 if (err) {
                   console.log(err);
                   return message.channel.send("Something went wrong while trying to set the CorkBoard channel! Please try again later.");
@@ -120,49 +120,24 @@ module.exports = {
               });
 
               embed.setDescription(`CorkBoard channel set.`);
-              embed.addField(`The CorkBoard channel has now been set to: `, `<#${configFile.cbChannel}>`);
+              embed.addField(`The CorkBoard channel has now been set to: `, `<#${serverConfig.corkboard.channelID}>`);
               return message.channel.send({embed});
             }
             else {
-              var channel = message.guild.channels.cache.find(textChannel => textChannel.name === args[1].toLowerCase());
-              var id = channel ? channel.id : null;
-              if (id == null) {
-                embed.setDescription(`No channel found.`);
-                embed.addField(`A channel with the name \`${args[1]}\` you entered does not exist!`, `Please try again.`, true);
-                return message.channel.send({embed});
-              }
-              else if (channel.type !== 'text') {
-                embed.setDescription(`Cannot set non-text channels.`);
-                embed.addField(`You cannot set a non-text channel to be the CorkBoard channel!`, `Please try again.`, true);
-                return message.channel.send({embed});
-              }
-              configFile.cbChannel = channel.id;
-
-              // If the CorkBoard is off, automatically turn it on.
-              if (configFile.cbStatus == false) configFile.cbStatus = true;
-
-              // Save the new settings to the server's config.json file.
-              fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
-                if (err) {
-                  console.log(err);
-                  return message.channel.send("Something went wrong while trying to set the CorkBoard channel! Please try again later.");
-                }
-              });
-
-              embed.setDescription(`CorkBoard channel set.`);
-              embed.addField(`The CorkBoard channel has now been set to: `, `<#${configFile.cbChannel}>`);
+              embed.setDescription(`Channel mention required.`);
+              embed.addField(`Please enter a channel mention to set it as the CorkBoard channel!`, `Please try again.`, true);
               return message.channel.send({embed});
             }
 
           case 'instapin':
             // check if pin mode is already set to InstaPin
-            if (configFile.cbPinMode == "instapin") {
+            if (serverConfig.corkboard.pinMode == "instapin") {
               embed.setDescription(`**InstaPin Mode already set.**`);
-              embed.addField(`InstaPin Mode is already enabled for this server.`, `If you would like to switch to Democratic Mode, do \`${configFile.prefix}corkboard democratic\`.`);
+              embed.addField(`InstaPin Mode is already enabled for this server.`, `If you would like to switch to Democratic Mode, do \`${serverConfig.prefix}corkboard democratic\`.`);
               return message.channel.send({embed});
             }
-            configFile.cbPinMode = "instapin";  // <-- set pin mode to InstaPin (switch it from Democratic)
-            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
+            serverConfig.corkboard.pinMode = "instapin";  // <-- set pin mode to InstaPin (switch it from Democratic)
+            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
               if (err) {
                 console.log(err);
                 return message.channel.send("Something went wrong while trying to set the pin mode! Please try again later.");
@@ -170,24 +145,23 @@ module.exports = {
             });
 
             embed.setDescription(`**InstaPin Mode enabled.**`);
-            if (configFile.cbChannel !== null && !configFile.cbChannel.deleted) {
+            if (serverConfig.corkboard.channelID !== null && !serverConfig.corkboard.channelID.deleted) {
               embed.addField(`InstaPin Mode is now enabled.`, `A corkboard channel has already been set, so you're ready to go!`);
             }
             else {
-              embed.addField(`InstaPin Mode is now enabled.`, `A corkboard channel has not been set yet, so please set one with \`${configFile.prefix}corkboard channel <channel mention>\`.`);
+              embed.addField(`InstaPin Mode is now enabled.`, `A corkboard channel has not been set yet, so please set one with \`${serverConfig.prefix}corkboard channel <channel mention>\`.`);
             }
             return message.channel.send({embed});
-            break;
 
           case 'democratic':
             // check if pin mode is already set to Democratic
-            if (configFile.cbPinMode == "democratic") {
+            if (serverConfig.corkboard.pinMode == "democratic") {
               embed.setDescription(`**Democratic Pin Mode already set.**`);
-              embed.addField(`Democratic Pin Mode is already enabled for this server.`, `If you would like to switch to InstaPin Mode, do \`${configFile.prefix}corkboard instapin\`.`);
+              embed.addField(`Democratic Pin Mode is already enabled for this server.`, `If you would like to switch to InstaPin Mode, do \`${serverConfig.prefix}corkboard instapin\`.`);
               return message.channel.send({embed});
             }
-            configFile.cbPinMode = "democratic";  // <-- set pin mode to Democratic (switch it from InstaPin)
-            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
+            serverConfig.corkboard.pinMode = "democratic";  // <-- set pin mode to Democratic (switch it from InstaPin)
+            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
               if (err) {
                 console.log(err);
                 return message.channel.send("Something went wrong while trying to set the pin mode! Please try again later.");
@@ -195,44 +169,43 @@ module.exports = {
             });
 
             embed.setDescription(`**Democratic Pin Mode enabled.**`);
-            if (configFile.cbChannel !== null && !configFile.cbChannel.deleted) {
+            if (serverConfig.corkboard.channelID !== null && !serverConfig.corkboard.channelID.deleted) {
               embed.addField(`Democratic Pin Mode is now enabled.`, `A corkboard channel has already been set, so you're ready to go!`);
             }
             else {
-              embed.addField(`Democratic Pin Mode is now enabled.`, `A corkboard channel has not been set yet, so please set one with \`${configFile.prefix}corkboard channel <channel mention>\`.`);
+              embed.addField(`Democratic Pin Mode is now enabled.`, `A corkboard channel has not been set yet, so please set one with \`${serverConfig.prefix}corkboard channel <channel mention>\`.`);
             }
             return message.channel.send({embed});
-            break;
 
           case 'pins':
             if (!args.slice(1) || args.slice(1).length < 1) {
               let description = "Sets the minimum number of :pushpin: reactions needed for a post to appear in the CorkBoard channel.";
-              embed.addField("Pin Threshold:", configFile.cbPinThreshold, true)
-              .addField("To update:", `\`${configFile.prefix}corkboard pins <number>\``, true);
-              if (configFile.cbPinMode == "instapin") {
+              embed.addField("Pin Threshold:", serverConfig.corkboard.pinThreshold, true)
+              .addField("To update:", `\`${serverConfig.prefix}corkboard pins <number>\``, true);
+              if (serverConfig.corkboard.pinMode == "instapin") {
                 embed.setDescription(`${description}\n(**Available in Democratic Pin Mode only.** Currently set to \`InstaPin\`.)`);
               }
               else { embed.setDescription(description); }
               return message.channel.send({embed});
             }
             // check if pin mode is set to InstaPin (false)
-            if (configFile.cbPinMode == "instapin") {
+            if (serverConfig.corkboard.pinMode == "instapin") {
               embed.setDescription(`**InstaPin Mode set for this server.**`);
-              embed.addField(`You cannot set a pin threshold while in InstaPin Mode.`, `If you would like to switch to Democratic Mode, do \`${configFile.prefix}corkboard democratic\`.`);
+              embed.addField(`You cannot set a pin threshold while in InstaPin Mode.`, `If you would like to switch to Democratic Mode, do \`${serverConfig.prefix}corkboard democratic\`.`);
               return message.channel.send({embed});
             }
             else if (isNaN(args.slice(1).join(""))) {
               embed.setDescription(`Non-number value entered.`)
-              .addField("In order to set the number of pins, please enter a number!", `Do \`${configFile.prefix}corkboard pins <number>\` to set the pin threshold.`);
+              .addField("In order to set the number of pins, please enter a number!", `Do \`${serverConfig.prefix}corkboard pins <number>\` to set the pin threshold.`);
               return message.channel.send({embed});
             }
-            configFile.cbPinThreshold = parseInt(args.slice(1).join(""));
-            if (configFile.cbPinThreshold < 1) {
+            serverConfig.corkboard.pinThreshold = Math.trunc(args.slice(1).join(""));
+            if (serverConfig.corkboard.pinThreshold < 1) {
               embed.setDescription(`Value too low.`)
-              .addField("The minimum pin threshold must be 1 or higher.", `Do \`${configFile.prefix}corkboard pins <number>\` to set the pin threshold.`);
+              .addField("The minimum pin threshold must be 1 or higher.", `Do \`${serverConfig.prefix}corkboard pins <number>\` to set the pin threshold.`);
               return message.channel.send({embed});
             }
-            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
+            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
               if (err) {
                 console.log(err);
                 return message.channel.send("Something went wrong while trying to set the pin threshold! Please try again later.");
@@ -240,37 +213,161 @@ module.exports = {
             });
 
             embed.setDescription(`Pin Threshold set.`);
-            embed.addField(`The minimum pin threshold has now been set to: `, `${configFile.cbPinThreshold} pin(s)`);
+            embed.addField(`The minimum pin threshold has now been set to: `, `${serverConfig.corkboard.pinThreshold} pin(s)`);
             return message.channel.send({embed});
+
+          case 'nsfw':
+            // check if corkboard allows NSFW channels
+            if (!serverConfig.corkboard.allowNSFW) {
+              serverConfig.corkboard.allowNSFW = true;
+              fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
+                if (err) {
+                  console.log(err);
+                  return message.channel.send("Something went wrong while trying to allow NSFW pins! Please try again later.");
+                }
+              });
+              embed.setDescription(`**NSFW channels allowed to pin messages.**`);
+              embed.addField("NSFW channels are now allowed to pin messages to the CorkBoard.", `If you would like to disable them, do \`${serverConfig.prefix}corkboard nsfw\` again.`);
+              return message.channel.send({embed});
+            }
+            else {
+              serverConfig.corkboard.allowNSFW = false;
+              fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
+                if (err) {
+                  console.log(err);
+                  return message.channel.send("Something went wrong while trying to deny NSFW pins! Please try again later.");
+                }
+              });
+              embed.setDescription(`**NSFW channels no longer allowed to pin messages.**`);
+              embed.addField("NSFW channels are no longer allowed to pin messages to the CorkBoard.", `If you would like to enable them, do \`${serverConfig.prefix}corkboard nsfw\` again.`);
+              return message.channel.send({embed});
+            }
+
+          case 'blacklist':
+            if (!args.slice(1) || args.slice(1).length < 1) {
+              embed.setDescription("Denies certain channels from pinning posts to the CorkBoard channel.");
+              if (serverBlacklist.corkboard.length < 1) {
+                embed.addField("Current Blacklist:", "**No blacklisted channels set!**", false);
+              } else {
+                var str = '';
+                for (var bc = 0; bc < serverBlacklist.corkboard.length - 1; bc++) {
+                  str += `<#${serverBlacklist.corkboard[bc]}> | `;
+                }
+                str += `<#${serverBlacklist.corkboard[serverBlacklist.corkboard.length - 1]}>`;
+                embed.addField(`Current Blacklist (${serverBlacklist.corkboard.length} channels):`, str, false);
+              }
+              embed.addField("To update:", `\`${serverConfig.prefix}corkboard blacklist <channel mention>\``, false);
+              return message.channel.send({embed});
+            }
+
+            if (args[1].startsWith('<@') && args[1].endsWith('>')) {
+              embed.setDescription(`Cannot add a user.`);
+              embed.addField(`You cannot add a user mention to blacklist from the CorkBoard channel!`, `Please try again.`, true);
+              return message.channel.send({embed});
+            }
+            else if (args[1].startsWith('<#') && args[1].endsWith('>')) {
+              var channelID = args[1].slice(2, args[1].length - 1);  // removes the preceding "<#" and ending ">"
+              if (message.guild.channels.cache.get(channelID) == undefined) {
+                embed.setDescription(`Cannot add a non-existent channel.`);
+                embed.addField(`You cannot add a non-existent channel to the CorkBoard channel blacklist!`, `Please try again.`, true);
+                return message.channel.send({embed});
+              }
+              else if (message.guild.channels.cache.get(channelID).type !== 'text') {
+                embed.setDescription(`Cannot add non-text channels.`);
+                embed.addField(`You cannot add a non-text channel to the CorkBoard channel blacklist!`, `Please try again.`, true);
+                return message.channel.send({embed});
+              }
+
+              if (serverBlacklist.wordfilter.length >= serverConfig.corkboard.maxBlackListSize) {
+                embed.setDescription(`**CorkBoard blacklist maximum size reached!**`)
+                .addField(`The CorkBoard blacklist can only hold up to ${serverConfig.corkboard.maxBlackListSize} channels.`, `Remove some with \`${serverConfig.prefix}corkboard blacklist <channel mention>\`.`);
+                return message.channel.send({embed});
+              }
+
+              // If the channel exists in the blacklist, remove it. If it doesn't, add it.
+              if (serverBlacklist.corkboard.includes(channelID)) {
+                for (let rc = 0; rc < serverBlacklist.corkboard.length; rc++) {
+                  if (channelID == serverBlacklist.corkboard[rc]) {
+                    serverBlacklist.corkboard.splice(rc, 1);
+                  }
+                }
+              }
+              else { serverBlacklist.corkboard.push(channelID); }
+
+              // Save the new settings to the server's blacklist.json file.
+              fs.writeFile(`./config/server/${message.guild.id}/blacklist.json`, JSON.stringify(serverBlacklist), (err) => {
+                if (err) {
+                  console.log(err);
+                  return message.channel.send("Something went wrong while trying to update the CorkBoard blacklist! Please try again later.");
+                }
+                else {
+                  var str = '';
+                  for (var bc = 0; bc < serverBlacklist.corkboard.length - 1; bc++) {
+                    str += `<#${serverBlacklist.corkboard[bc]}> | `;
+                  }
+                  if (serverBlacklist.corkboard.length < 1) { str = "**No blacklisted channels set!**"; }
+                  else if (serverBlacklist.corkboard.length == 1) { str = `<#${serverBlacklist.corkboard[0]}>`; }
+                  else { str += `<#${serverBlacklist.corkboard[serverBlacklist.corkboard.length - 1]}>`; }
+                  embed.setDescription(`CorkBoard blacklist updated.`);
+                  embed.addField(`The CorkBoard blacklist has now been set to: `, str);
+                  return message.channel.send({embed});
+                }
+              });
+            }
+            else {
+              embed.setDescription(`Channel mention required.`);
+              embed.addField(`Please enter a channel mention to blacklist it from the CorkBoard!`, `Please try again.`, true);
+              return message.channel.send({embed});
+            }
+            break;
 
           default:
             // show general corkboard settings
             embed.setDescription(`Turns the CorkBoard feature on or off, changes the channel to show pinned messages, and changes the minimum number of pins for a post to show in the pin channel.`);
-            embed.addField("Change options with:", `on - turns on CorkBoard\noff - turns off CorkBoard\nchannel - sets the CorkBoard channel\ndemocratic - toggles Democratic Mode (react with 📌 to pin posts)\ninstapin - toggles InstaPin Mode (pin a message with "pin message")\npins - sets the number of pin reactions needed for a post to show in the corkboard channel`);
-            switch (configFile.cbStatus) {
+            embed.addField("Change options with:", `on - turns on CorkBoard\noff - turns off CorkBoard\nchannel - sets the CorkBoard channel\ndemocratic - toggles Democratic Mode (react with 📌 to pin posts)\ninstapin - toggles InstaPin Mode (pin a message with "pin message")\npins - sets the number of pin reactions needed for a post to show in the corkboard channel\nnsfw - allow/deny pins from NSFW channels\nblacklist - deny pins from certain channels`);
+            switch (serverConfig.corkboard.enabled) {
               case false:
-                embed.addField("CorkBoard:",  "`disabled`", false);
+                embed.addField("CorkBoard:",  "**disabled**", true);
                 break;
               case true:
-                embed.addField("CorkBoard:",  "`enabled`", false);
+                embed.addField("CorkBoard:",  "**enabled**", true);
                 break;
             }
-            switch (configFile.cbChannel) {
+            switch (serverConfig.corkboard.channelID) {
               case null:
                 embed.addField(`CorkBoard Channel: `, `**None set!**`, true);
                 break;
               default:
-                embed.addField(`CorkBoard Channel: `, `<#${configFile.cbChannel}>`, true);
+                embed.addField(`CorkBoard Channel: `, `<#${serverConfig.corkboard.channelID}>`, true);
                 break;
             }
-            switch (configFile.cbPinMode) {
+            switch(serverConfig.corkboard.allowNSFW) {
+              case true:
+                embed.addField(`Allow NSFW Pins:`, "**yes**", true);
+                break;
+              case false:
+                embed.addField(`Allow NSFW Pins:`, "**no**", true);
+                break;
+            }
+            switch (serverConfig.corkboard.pinMode) {
               case "democratic":
-                embed.addField("Pin Mode: ", "`Democratic`", true);
-                embed.addField("Pin Reaction Threshold:", configFile.cbPinThreshold, true);
+                embed.addField("Pin Mode: ", "`Democratic`", true)
+                .addField("Pin Reaction Threshold:", serverConfig.corkboard.pinThreshold, true);
                 break;
               case "instapin":
                 embed.addField("Pin Mode: ", "`InstaPin`", true);
                 break;
+            }
+            var str = '';
+            for (var bc = 0; bc < serverBlacklist.corkboard.length - 1; bc++) {
+              str += `<#${serverBlacklist.corkboard[bc]}> | `;
+            }
+            str += `<#${serverBlacklist.corkboard[serverBlacklist.corkboard.length - 1]}>`;
+            if (serverBlacklist.corkboard.length < 1) {
+              embed.addField("Current Blacklist:", "**No blacklisted channels set!**", false);
+            }
+            else {
+              embed.addField(`Current Blacklist (${serverBlacklist.corkboard.length} channels):`, str, false);
             }
             return message.channel.send({embed});
         }

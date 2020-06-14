@@ -13,37 +13,40 @@ const discord = require("discord.js");
 
 module.exports = async (bot, reaction, user) => {
 
+    if (reaction.message.channel.type == "dm") return;
+
     // check if the CorkBoard and  Democratic Pin Mode is enabled for the server; if it's not, stop here
     const message = reaction.message;
-    const configFile = require(`../../config/server/${message.guild.id}/config.json`);
-    if (configFile.cbStatus == false) return;
-    else if (configFile.cbPinMode == "instapin") return;
+    const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
+    if (!serverConfig.corkboard.enabled) return;
+    else if (serverConfig.corkboard.pinMode == "instapin") return;
 
-    // If the reaction isn't the pushpin emoji or if the user tries to pin a bot's message, stop here.
+    // If the reaction isn't the pushpin emoji, stop here.
     if (reaction.emoji.name !== '📌') return;
 
+    // Check if the channel is on the server's CorkBoard blacklist. If it is, stop here.
+    let serverBlacklist = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/blacklist.json`, 'utf8'));
+    if (serverBlacklist.corkboard.includes(message.channel.id)) return message.channel.send("Sorry, this channel is blacklisted from the CorkBoard.");
+
+    // Check if channel is NSFW and whether the server allows NSFW pins. If the channel is NSFW and
+    // the server doesn't allow NSFW posts, stop here.
+    if (!serverConfig.corkboard.allowNSFW && message.channel.nsfw) return message.channel.send("Sorry, NSFW channels currently aren't allowed to pin messages to the CorkBoard.");
+
     // check if there's a valid corkboard channel, and if the channel is deleted, automatically turn it off and reset the channel to null
-    if (configFile.cbChannel == null) return;
-    let pinChannel = message.guild.channels.cache.find(c => c.id === configFile.cbChannel);
+    if (!serverConfig.corkboard.channelID) return;
+    let pinChannel = message.guild.channels.cache.find(c => c.id === serverConfig.corkboard.channelID);
     if (!pinChannel) {
-        configFile.cbStatus = false;
-        configFile.cbChannel = null;
-        fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(configFile, null, 1), (err) => {
-          if (err) console.log(err);
-        });
-        return console.log(`CorkBoard feature turned off and channel has been reset for ${message.guild.name} (ID: ${message.guild.id})`);
+        serverConfig.corkboard.channelID = null;
+        return fs.writeFileSync(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
     }
 
-    // look for pinned messages already in the corkboard channel with the message's ID.
+    // look for pinned messages already in the corkboard channel with the message's ID. The try-catch block is necessary in case there are non-embed messages in the CorkBoard channel.
     const fetchedMessages = await pinChannel.messages.fetch({ limit: 100 });
-    let pins;
-    try {
-      pins = fetchedMessages.find(m => m.embeds[0].footer.text.endsWith(message.id));
-    }
+    var pins = undefined;
+    try { pins = fetchedMessages.find(m => m.embeds[0].footer.text.endsWith(message.id)); }
     catch (e) {
       console.log(e);
-      message.channel.send(`Couldn't find the original pinned message in <#${configFile.cbChannel}>! Are there any non-embed messages in there...?`);
-      pins = undefined;
+      message.channel.send(`Couldn't find the original pinned message in <#${serverConfig.corkboard.channelID}>! Are there any non-embed messages in there...?`);
     }
 
     // If there are, update the pin count on the embed.

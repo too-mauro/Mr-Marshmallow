@@ -1,65 +1,74 @@
 /*
 This event runs whenever this bot joins a new server. It creates a new folder
-in the config/server directory, creates a general config.json file and copies
-the defaultquotes.json file from the config/bot directory for the "quote"
-command, and sends a message to the pre-defined log channel saying that it
-joined a new server.
+in the config/server directory if one does not already exist, creates a general
+config.json file, copies the defaultquotes.json and blacklist.json files from
+the config/bot directory for the "quote" command and CorkBoard channel and word
+filter settings respectively, and sends a message to the pre-defined log channel
+saying that it joined a new server.
 */
 
 const fs = require("fs");
-const botConfigFile = require("../../config/bot/settings.json");
 const discord = require("discord.js");
+const botConfigFile = JSON.parse(fs.readFileSync("./config/bot/settings.json", 'utf8'));
 const { green_dark } = require("../../config/bot/colors.json");
 
 module.exports = async (bot, guild) => {
 
     // Check if the configuration folder already exists. If it doesn't, then create
     // whatever's necessary for the bot to run smoothly.
-    if (!fs.existsSync(`./config/server/${guild.id}/`)) {
-
-        // Create the new server's configuration folder
-        fs.mkdir(`./config/server/${guild.id}/`, (err) => {
-          if (err) console.log(err);
-        });
-
-        // Create the config.json file using default data from the bot's settings.json file.
-        // By default, the Corkboard uses Democratic Mode instead of InstaPin.
-        var configData = {
-          prefix: botConfigFile.defaultPrefix,
-          dmStatus: false,
-          dmChannel: null,
-          welcomeMessage: botConfigFile.defaultJoinMessage,
-          leaveMessage: botConfigFile.defaultLeaveMessage,
-          cbStatus: false,
-          cbChannel: null,
-          cbPinMode: "democratic",
-          cbPinThreshold: botConfigFile.defaultPinThreshold,
-          maxQuotes: botConfigFile.defaultMaxQuotes,
-          gameInProgress: false
-        };
-        fs.writeFile(`./config/server/${guild.id}/config.json`, JSON.stringify(configData, null, 1), 'utf8', (err) => {
-          if (err) console.log(err);
-        });
-
-        // Copy the quotes from defaultQuotes.json into the server's quotes.json file.
-        fs.copyFile('./config/bot/defaultquotes.json', `./config/server/${guild.id}/quotes.json`, (err) => {
-          if (err) console.log(err);
-        });
+    if (fs.existsSync(`./config/server/${guild.id}/`)) {
+      console.log(`${guild.name} (server ID ${guild.id}) already has configuration data set.`);
     }
     else {
-      console.log(`The configuration folder already exists for ${guild.name}!`);
+      // Create the new server's configuration folder
+      fs.mkdirSync(`./config/server/${guild.id}/`);
+
+      // Create the config.json file using default data from the bot's settings.json file.
+      // This handles the server's prefix, DoorMat, CorkBoard, and word filter settings.
+      const configData = {
+        prefix: botConfigFile.defaults.prefix,
+        doormat: {
+          enabled: false,
+          channelID: null,
+          welcomeMessage: botConfigFile.defaults.joinMessage,
+          leaveMessage: botConfigFile.defaults.leaveMessage,
+          banMessage: botConfigFile.defaults.banMessage
+        },
+        corkboard: {
+          enabled: false,
+          channelID: null,
+          pinMode: botConfigFile.defaults.pinMode,
+          pinThreshold: botConfigFile.defaults.pinThreshold,
+          allowNSFW: false
+        },
+        maxQuotes: botConfigFile.defaults.maxQuotes,
+        games: {
+          triviaInProgress: false,
+          riddlesInProgress: false
+        },
+        wordfilter: {
+          enabled: false,
+          maxBlackListSize: botConfigFile.defaults.maxBlackListSize,
+          warnings: {
+            enabled: false,
+            message: botConfigFile.defaults.warnMessage
+          }
+        }
+      };
+      fs.writeFileSync(`./config/server/${guild.id}/config.json`, JSON.stringify(configData, null, 1), 'utf8');
+
+      // Copy the default blacklist.json file into the server's configuration folder. This file handles the blacklisted words and CorkBoard channels for the server.
+      fs.copyFileSync("./config/bot/defaults/blacklist.json", `./config/server/${guild.id}/blacklist.json`);
+
+      // Copy the default quotes.json file into the server's quotes.json file, then create an empty text file for exporting them.
+      fs.copyFileSync("./config/bot/defaults/quotes.json", `./config/server/${guild.id}/quotes.json`);
+      fs.writeFileSync(`./config/server/${guild.id}/quotes.txt`, "", 'utf8');
     }
+
+    // Send a message to the console.
+    console.log(`Joined ${guild.name} (ID: ${guild.id})!`);
 
     // Try to send the "Server Joined" message to the log channel.
-    if (!guild.member(bot.user).hasPermission("EMBED_LINKS")) {
-      try {
-        bot.channels.cache.get(botConfigFile.logChannel).send(`**-- JOINED A SERVER--**\n${guild.name} (ID: ${guild.id})`);
-      }
-      catch (e) {
-        console.log("Couldn't send the \"joined server\" message to the log channel!\n", e);
-      }
-    }
-
     const embed = new discord.MessageEmbed()
         .setColor(green_dark)
         .setTitle(`Joined a Server!`)
@@ -67,12 +76,8 @@ module.exports = async (bot, guild) => {
         .addField("ID:", guild.id, true)
         .addField("Member Count:", guild.memberCount)
         .setThumbnail(guild.iconURL())
-        .setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
+        .setFooter(bot.user.username, bot.user.displayAvatarURL());
 
-    try {
-      bot.channels.cache.get(botConfigFile.logChannel).send({embed});
-    }
-    catch (e) {
-      console.log("Couldn't send the \"joined server\" message to the log channel!\n", e);
-    }
+    try { bot.channels.cache.get(botConfigFile.channels.log).send({embed}); }
+    catch (e) { console.log("Couldn't send the 'joined server' message to the log channel!\n", e); }
 }

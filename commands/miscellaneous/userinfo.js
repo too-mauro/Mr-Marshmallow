@@ -10,7 +10,7 @@ module.exports = {
     config: {
         name: "userinfo",
         description: "Gives information about yourself or a user.",
-        usage: ["(@mention)"],
+        usage: "(@mention)",
         category: "miscellaneous",
         aliases: ["ui"]
     },
@@ -29,23 +29,24 @@ module.exports = {
           .setColor(red_light)
           .setAuthor(member.user.tag, member.user.displayAvatarURL())
           .setThumbnail(member.user.displayAvatarURL())
-          .addField("**ID:**", `${member.id}`, true);
+          .addField("**ID:**", member.id, true);
 
       // write out "do not disturb" if the user set themselves to dnd
       if (member.presence.status == "dnd") {
         embed.addField("**Status:**", "do not disturb", true);
       }
       else {
-        embed.addField("**Status:**", `${member.presence.status}`, true);
+        embed.addField("**Status:**", member.presence.status, true);
       }
-      embed.addField("**Joined Discord On:**", `${member.user.createdAt}`, false)
-      .addField("**Joined the Server On:**", `${member.joinedAt}`, false)
+      embed.addField("**Joined Discord On:**", member.user.createdAt, false)
+      .addField("**Joined the Server On:**", member.joinedAt, false)
 
       var roles = member.roles.cache.filter(r => r.id !== message.guild.id);
       if (roles.size < 1) {
         embed.addField("**Roles:**", "No roles!", false);
       }
       else {
+        // List the user's roles from highest ranking to lowest ranking.
         embed.addField(`**Roles (${roles.size}):**`, roles.map(r => r).sort((a, b) => b.position - a.position || b.id - a.id).join(" "), false);
       }
 
