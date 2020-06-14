@@ -13,8 +13,8 @@ module.exports = async (bot) => {
   const version = JSON.parse(fs.readFileSync("./package.json")).version;
 
   // Set bot's status to online and presence to playing a game of the help command.
-//  bot.user.setStatus("online");
-//  bot.user.setActivity(`${botConfigFile.defaults.prefix}help`, { type: 'PLAYING' });
+  bot.user.setStatus("online");
+  bot.user.setActivity(`${botConfigFile.defaults.prefix}help`, { type: 'PLAYING' });
   console.log(`${bot.user.username} v${removeEndingZeroes(version)} is online and ready!`);
 
   // Send a startup message to the log channel if the startupMessage flag is set to true in the bot settings file.

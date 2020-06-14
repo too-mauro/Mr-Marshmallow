@@ -1,6 +1,6 @@
 {
 	"ownerID": "309411734081372162",
-	"startupMessageEnabled": false,
+	"startupMessageEnabled": true,
 	"channels": {
 		"log": "566792124100771881",
 		"ticket": "632788916969406465"
