@@ -32,13 +32,18 @@ module.exports = {
     // check if the string has a blacklisted word and stop here if at least 1 is found
     const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
     if (serverConfig.wordfilter.enabled) {
-      let serverBlacklist = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/blacklist.json`, 'utf8'));
-      const blocked = serverBlacklist.wordfilter.filter(w => message.content.toLowerCase().match(new RegExp(w, 'g')));
+      let serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
+      const blocked = serverDenyList.wordfilter.filter(word => message.content.toLowerCase().includes(word));
       if (blocked.length > 0) {
         if (serverConfig.wordfilter.warnings.enabled) {
-          message.channel.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
+          if (serverConfig.wordfilter.warnings.warnType == "channel") {
+            return message.channel.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
+          }
+          else if (serverConfig.wordfilter.warnings.warnType == "dm") {
+            message.author.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
+            return message.channel.send(`${message.author} has been warned for using a restricted word!`);
+          }
         }
-        return;
       }
     }
 

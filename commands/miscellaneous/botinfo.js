@@ -7,6 +7,7 @@ current prefix, and the bot's version (from the package.json file).
 const fs = require("fs");
 const discord = require("discord.js");
 const { cream } = require("../../config/bot/colors.json");
+const version = JSON.parse(fs.readFileSync("./package.json", "utf8")).version;
 
 module.exports = {
     config: {
@@ -19,11 +20,10 @@ module.exports = {
     run: async (bot, message, args) => {
 
       const prefix = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8')).prefix;
-      const version = JSON.parse(fs.readFileSync("./package.json", "utf8")).version;
       const embed = new discord.MessageEmbed()
           .setColor(cream)
           .setTitle(`${bot.user.username} Info`)
-          .setDescription("Loading information...");
+          .setDescription("Loading information, hang tight...");
       message.channel.send({embed}).then(m => {
         embed.setThumbnail(bot.user.displayAvatarURL())
             .setDescription(`Hanging out with ${bot.users.cache.size} users on ${bot.guilds.cache.size} servers!`)

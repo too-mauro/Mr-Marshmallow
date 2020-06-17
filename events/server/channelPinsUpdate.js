@@ -25,12 +25,12 @@ module.exports = async (bot, channel, time) => {
     if (time.getTime() !== channel.lastPinTimestamp) return;
 
     // Check if the channel is on the server's CorkBoard blacklist. If it is, stop here.
-    const serverBlacklist = JSON.parse(fs.readFileSync(`./config/server/${channel.guild.id}/blacklist.json`, 'utf8'));
-    if (serverBlacklist.corkboard.includes(channel.id)) return channel.send("Sorry, this channel is blacklisted from the CorkBoard.");
+    const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${channel.guild.id}/denylist.json`, 'utf8'));
+    if (serverDenyList.corkboard.includes(channel.id)) return channel.send("Sorry, this channel has been restricted from pinning posts to the CorkBoard.");
 
     // Check if channel is NSFW and whether the server allows NSFW pins. If the channel is NSFW and
     // the server doesn't allow NSFW posts, stop here.
-    if (!serverConfig.corkboard.allowNSFW && channel.nsfw) return channel.send("Sorry, NSFW channels currently aren't allowed to pin messages to the CorkBoard.");
+    if (!serverConfig.corkboard.allowNSFW && channel.nsfw) return channel.send("Sorry, NSFW channels have been restricted from pinning posts to the CorkBoard.");
 
     // Check if there's a valid corkboard channel, and if the channel is deleted, automatically reset the channel to null.
     if (!serverConfig.corkboard.channelID) return;
@@ -40,44 +40,36 @@ module.exports = async (bot, channel, time) => {
         return fs.writeFileSync(`./config/server/${channel.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
     }
 
-    // Get the channel's pinned messages, if applicable. The Insta-Pin will only fire if it found at least one message.
-    // If there are more than one, it will get the most recently pinned message's data, post it to the corkboard channel, then unpin it
-    // from the original channel where it was posted.
+    /* Get the channel's pinned messages, if applicable. The Insta-Pin will only fire if it found at least one message.
+    If there are more than one, it will get the most recently pinned message's data, post it to the corkboard channel, then unpin it from the original channel where it was posted. */
     let fetchedPins = await channel.messages.fetchPinned();
     let mostRecentPin = fetchedPins.first();
     if (mostRecentPin) {
-        // if the user tries to pin a bot's message, stop here.
-        if (mostRecentPin.author.bot) {
-          channel.send("Sorry, I can't pin bot messages.").then(msg => {
-            if (channel.guild.member(bot.user).hasPermission("MANAGE_MESSAGES")) { mostRecentPin.unpin(); }
-            msg.delete({ timeout: 3000 });
-          });
-          return;
-        }
+      // if the user tries to pin a bot's message, stop here.
+      if (mostRecentPin.author.bot) return channel.send("Sorry, I can't pin bot messages.");
 
-        // Look if there is an image attached. If there is, include it in the embed.
-        const image = mostRecentPin.attachments.size > 0 ? await extension(mostRecentPin.attachments.array()[0].url) : '';
-        if (image == '' && mostRecentPin.cleanContent.length < 1) return mostRecentPin.channel.send(`Sorry, I can't pin empty messages.`);
-        const embed = new discord.MessageEmbed()
-          .setColor(mostRecentPin.channel.guild.member(mostRecentPin.author).displayHexColor)
-          .setAuthor(`📌 Message Pinned!`)
-          .setThumbnail(mostRecentPin.author.displayAvatarURL())
-          .addField("Author", mostRecentPin.author, true)
-          .addField("Channel", mostRecentPin.channel, true);
-          if (mostRecentPin.cleanContent.length > 0) embed.addField("Message", mostRecentPin.cleanContent, false)
-          embed.setImage(image)
-          .addField("Message", `[Jump to it!](https://discord.com/channels/${mostRecentPin.channel.guild.id}/${mostRecentPin.channel.id}/${mostRecentPin.id})`, true)
-          .setTimestamp(new Date())
-          .setFooter(bot.user.username, bot.user.displayAvatarURL());
-        await pinChannel.send({ embed });
+      // Look if there is an image attached. If there is, include it in the embed.
+      const image = mostRecentPin.attachments.size > 0 ? await extension(mostRecentPin.attachments.array()[0].url) : '';
+      const embed = new discord.MessageEmbed()
+        .setColor(mostRecentPin.channel.guild.member(mostRecentPin.author).displayHexColor)
+        .setAuthor("📌 Message Pinned!")
+        .setThumbnail(mostRecentPin.author.displayAvatarURL())
+        .addField("Author", mostRecentPin.author, true)
+        .addField("Channel", mostRecentPin.channel, true)
+        .addField("Message", `[Jump to it!](https://discord.com/channels/${mostRecentPin.channel.guild.id}/${mostRecentPin.channel.id}/${mostRecentPin.id})`, true)
+        .setTimestamp()
+        .setFooter(bot.user.username, bot.user.displayAvatarURL());
+      if (mostRecentPin.cleanContent.length > 0) { embed.addField("Message", mostRecentPin.cleanContent, false); }
+      if (image !== '') { embed.setImage(image); }
+      await pinChannel.send({ embed });
 
-        // Remove the pinned message from the channel.
-        if (channel.guild.member(bot.user).hasPermission("MANAGE_MESSAGES")) { mostRecentPin.unpin(); }
-        else return channel.send("I couldn't unpin the latest pinned message! Do I have the `Manage Messages` permission...?");
+      // Remove the pinned message from the channel.
+      if (channel.guild.member(bot.user).hasPermission("MANAGE_MESSAGES")) { mostRecentPin.unpin(); }
+      else return channel.send("I couldn't unpin the latest pinned message! Do I have the `Manage Messages` permission...?");
     }
 }
 
-// Here we add the extension function to check if there's anything attached to the message.
+// This is the extension function to check if there's a picture attached to the message. This won't work for videos.
 function extension(attachment) {
   const imageLink = attachment.split('.');
   const typeOfImage = imageLink[imageLink.length - 1];

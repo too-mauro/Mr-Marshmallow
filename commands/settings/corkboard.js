@@ -13,7 +13,7 @@ module.exports = {
     config: {
         name: "corkboard",
         aliases: ["cb"],
-        usage: "(on) (off) (channel <channel>) (pins <number>) (nsfw) (blacklist <channel>)",
+        usage: "(on) (off) (channel <channel>) (pins <number>) (nsfw) (deny <channel>)",
         category: "settings",
         description: "Configures the CorkBoard feature for this server. Requires **Manage Server** permission."
     },
@@ -24,10 +24,16 @@ module.exports = {
         }
 
         let serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
-        let serverBlacklist = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/blacklist.json`, 'utf8'));
+        let serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
         const embed = new discord.MessageEmbed()
             .setColor(orange)
             .setTitle(`${bot.user.username} CorkBoard Settings`);
+
+        // If the corkboard channel gets deleted before this command runs, reset it so it displays as "none set!".
+        if (!serverConfig.corkboard.channelID) {
+          serverConfig.corkboard.channelID = null;
+          fs.writeFileSync(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), "utf8");
+        }
 
         if (args[0] && isNaN(args[0])) { args[0] = args[0].toLowerCase(); }
         switch (args[0]) {
@@ -243,80 +249,80 @@ module.exports = {
               return message.channel.send({embed});
             }
 
-          case 'blacklist':
+          case 'deny':
             if (!args.slice(1) || args.slice(1).length < 1) {
               embed.setDescription("Denies certain channels from pinning posts to the CorkBoard channel.");
-              if (serverBlacklist.corkboard.length < 1) {
-                embed.addField("Current Blacklist:", "**No blacklisted channels set!**", false);
+              if (serverDenyList.corkboard.length < 1) {
+                embed.addField("Current Deny-list:", "**No restricted channels set!**", false);
               } else {
                 var str = '';
-                for (var bc = 0; bc < serverBlacklist.corkboard.length - 1; bc++) {
-                  str += `<#${serverBlacklist.corkboard[bc]}> | `;
+                for (var bc = 0; bc < serverDenyList.corkboard.length - 1; bc++) {
+                  str += `<#${serverDenyList.corkboard[bc]}> | `;
                 }
-                str += `<#${serverBlacklist.corkboard[serverBlacklist.corkboard.length - 1]}>`;
-                embed.addField(`Current Blacklist (${serverBlacklist.corkboard.length} channels):`, str, false);
+                str += `<#${serverDenyList.corkboard[serverDenyList.corkboard.length - 1]}>`;
+                embed.addField(`Current Deny-list (${serverDenyList.corkboard.length} channels):`, str, false);
               }
-              embed.addField("To update:", `\`${serverConfig.prefix}corkboard blacklist <channel mention>\``, false);
+              embed.addField("To update:", `\`${serverConfig.prefix}corkboard deny <channel mention>\``, false);
               return message.channel.send({embed});
             }
 
             if (args[1].startsWith('<@') && args[1].endsWith('>')) {
               embed.setDescription(`Cannot add a user.`);
-              embed.addField(`You cannot add a user mention to blacklist from the CorkBoard channel!`, `Please try again.`, true);
+              embed.addField(`You cannot add a user mention to deny from the CorkBoard channel!`, `Please try again.`, true);
               return message.channel.send({embed});
             }
             else if (args[1].startsWith('<#') && args[1].endsWith('>')) {
               var channelID = args[1].slice(2, args[1].length - 1);  // removes the preceding "<#" and ending ">"
-              if (message.guild.channels.cache.get(channelID) == undefined) {
+              if (!message.guild.channels.cache.get(channelID)) {
                 embed.setDescription(`Cannot add a non-existent channel.`);
-                embed.addField(`You cannot add a non-existent channel to the CorkBoard channel blacklist!`, `Please try again.`, true);
+                embed.addField(`You cannot add a non-existent channel to the CorkBoard channel deny-list!`, `Please try again.`, true);
                 return message.channel.send({embed});
               }
               else if (message.guild.channels.cache.get(channelID).type !== 'text') {
                 embed.setDescription(`Cannot add non-text channels.`);
-                embed.addField(`You cannot add a non-text channel to the CorkBoard channel blacklist!`, `Please try again.`, true);
+                embed.addField(`You cannot add a non-text channel to the CorkBoard channel deny-list!`, `Please try again.`, true);
                 return message.channel.send({embed});
               }
 
-              if (serverBlacklist.wordfilter.length >= serverConfig.corkboard.maxBlackListSize) {
-                embed.setDescription(`**CorkBoard blacklist maximum size reached!**`)
-                .addField(`The CorkBoard blacklist can only hold up to ${serverConfig.corkboard.maxBlackListSize} channels.`, `Remove some with \`${serverConfig.prefix}corkboard blacklist <channel mention>\`.`);
+              if (serverDenyList.wordfilter.length >= serverConfig.corkboard.maxBlackListSize) {
+                embed.setDescription(`**CorkBoard deny-list maximum size reached!**`)
+                .addField(`The CorkBoard deny-list can only hold up to ${serverConfig.corkboard.maxBlackListSize} channels.`, `Remove some with \`${serverConfig.prefix}corkboard deny <channel mention>\`.`);
                 return message.channel.send({embed});
               }
 
-              // If the channel exists in the blacklist, remove it. If it doesn't, add it.
-              if (serverBlacklist.corkboard.includes(channelID)) {
-                for (let rc = 0; rc < serverBlacklist.corkboard.length; rc++) {
-                  if (channelID == serverBlacklist.corkboard[rc]) {
-                    serverBlacklist.corkboard.splice(rc, 1);
+              // If the channel exists in the deny-list, remove it. If it doesn't, add it.
+              if (serverDenyList.corkboard.includes(channelID)) {
+                for (let rc = 0; rc < serverDenyList.corkboard.length; rc++) {
+                  if (channelID == serverDenyList.corkboard[rc]) {
+                    serverDenyList.corkboard.splice(rc, 1);
                   }
                 }
               }
-              else { serverBlacklist.corkboard.push(channelID); }
+              else { serverDenyList.corkboard.push(channelID); }
 
-              // Save the new settings to the server's blacklist.json file.
-              fs.writeFile(`./config/server/${message.guild.id}/blacklist.json`, JSON.stringify(serverBlacklist), (err) => {
+              // Save the new settings to the server's deny-list.json file.
+              fs.writeFile(`./config/server/${message.guild.id}/denylist.json`, JSON.stringify(serverDenyList), (err) => {
                 if (err) {
                   console.log(err);
-                  return message.channel.send("Something went wrong while trying to update the CorkBoard blacklist! Please try again later.");
+                  return message.channel.send("Something went wrong while trying to update the CorkBoard deny-list! Please try again later.");
                 }
                 else {
                   var str = '';
-                  for (var bc = 0; bc < serverBlacklist.corkboard.length - 1; bc++) {
-                    str += `<#${serverBlacklist.corkboard[bc]}> | `;
+                  for (var bc = 0; bc < serverDenyList.corkboard.length - 1; bc++) {
+                    str += `<#${serverDenyList.corkboard[bc]}> | `;
                   }
-                  if (serverBlacklist.corkboard.length < 1) { str = "**No blacklisted channels set!**"; }
-                  else if (serverBlacklist.corkboard.length == 1) { str = `<#${serverBlacklist.corkboard[0]}>`; }
-                  else { str += `<#${serverBlacklist.corkboard[serverBlacklist.corkboard.length - 1]}>`; }
-                  embed.setDescription(`CorkBoard blacklist updated.`);
-                  embed.addField(`The CorkBoard blacklist has now been set to: `, str);
+                  if (serverDenyList.corkboard.length < 1) { str = "**No restricted channels set!**"; }
+                  else if (serverDenyList.corkboard.length == 1) { str = `<#${serverDenyList.corkboard[0]}>`; }
+                  else { str += `<#${serverDenyList.corkboard[serverDenyList.corkboard.length - 1]}>`; }
+                  embed.setDescription(`CorkBoard deny-list updated.`);
+                  embed.addField(`The CorkBoard deny-list has now been set to: `, str);
                   return message.channel.send({embed});
                 }
               });
             }
             else {
               embed.setDescription(`Channel mention required.`);
-              embed.addField(`Please enter a channel mention to blacklist it from the CorkBoard!`, `Please try again.`, true);
+              embed.addField(`Please enter a channel mention to deny it from the CorkBoard!`, `Please try again.`, true);
               return message.channel.send({embed});
             }
             break;
@@ -324,7 +330,7 @@ module.exports = {
           default:
             // show general corkboard settings
             embed.setDescription(`Turns the CorkBoard feature on or off, changes the channel to show pinned messages, and changes the minimum number of pins for a post to show in the pin channel.`);
-            embed.addField("Change options with:", `on - turns on CorkBoard\noff - turns off CorkBoard\nchannel - sets the CorkBoard channel\ndemocratic - toggles Democratic Mode (react with 📌 to pin posts)\ninstapin - toggles InstaPin Mode (pin a message with "pin message")\npins - sets the number of pin reactions needed for a post to show in the corkboard channel\nnsfw - allow/deny pins from NSFW channels\nblacklist - deny pins from certain channels`);
+            embed.addField("Change options with:", `on - turns on CorkBoard\noff - turns off CorkBoard\nchannel - sets the CorkBoard channel\ndemocratic - toggles Democratic Mode (react with 📌 to pin posts)\ninstapin - toggles InstaPin Mode (pin a message with "pin message")\npins - sets the number of pin reactions needed for a post to show in the corkboard channel\nnsfw - allow/deny pins from NSFW channels\ndeny - deny pins from certain channels`);
             switch (serverConfig.corkboard.enabled) {
               case false:
                 embed.addField("CorkBoard:",  "**disabled**", true);
@@ -359,15 +365,15 @@ module.exports = {
                 break;
             }
             var str = '';
-            for (var bc = 0; bc < serverBlacklist.corkboard.length - 1; bc++) {
-              str += `<#${serverBlacklist.corkboard[bc]}> | `;
+            for (var bc = 0; bc < serverDenyList.corkboard.length - 1; bc++) {
+              str += `<#${serverDenyList.corkboard[bc]}> | `;
             }
-            str += `<#${serverBlacklist.corkboard[serverBlacklist.corkboard.length - 1]}>`;
-            if (serverBlacklist.corkboard.length < 1) {
-              embed.addField("Current Blacklist:", "**No blacklisted channels set!**", false);
+            str += `<#${serverDenyList.corkboard[serverDenyList.corkboard.length - 1]}>`;
+            if (serverDenyList.corkboard.length < 1) {
+              embed.addField("Current Deny-list:", "**No restricted channels set!**", false);
             }
             else {
-              embed.addField(`Current Blacklist (${serverBlacklist.corkboard.length} channels):`, str, false);
+              embed.addField(`Current Deny-list (${serverDenyList.corkboard.length} channels):`, str, false);
             }
             return message.channel.send({embed});
         }

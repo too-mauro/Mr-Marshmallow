@@ -26,22 +26,27 @@ module.exports = async (bot, message) => {
       const args = message.content.slice(cleanPrefix.length).trim().split(/ +/g);
       const cmd = args.shift().toLowerCase();
       const commandfile = bot.commands.get(cmd) || bot.commands.get(bot.aliases.get(cmd));
-      if (commandfile) return commandfile.run(bot, message, args);
+      if (commandfile) { return commandfile.run(bot, message, args); }
     }
 
     /* At this point, no command was found. If the server's blacklist filter is enabled, check for
       words in the filter. If any are found, try to delete it and warn the user with the server's
       warning message (if the warn user option is set). */
     if (serverConfig.wordfilter.enabled) {
-      const serverBlacklist = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/blacklist.json`, 'utf8'));
-      const blocked = serverBlacklist.wordfilter.filter(word => message.content.toLowerCase().includes(word));
+      const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
+      const blocked = serverDenyList.wordfilter.filter(word => message.content.toLowerCase().includes(word));
       if (blocked.length > 0) {
         if (message.guild.member(bot.user).hasPermission("MANAGE_MESSAGES")) { message.delete(); }
-        else { message.channel.send("I couldn't delete the message with the bad word(s)!"); }
+        else { message.channel.send("I couldn't delete the message with the restricted word(s)!"); }
         if (serverConfig.wordfilter.warnings.enabled) {
-          message.channel.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
+          if (serverConfig.wordfilter.warnings.warnType == "channel") {
+            return message.channel.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
+          }
+          else if (serverConfig.wordfilter.warnings.warnType == "dm") {
+            message.author.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
+            return message.channel.send(`${message.author} has been warned for using a restricted word!`);
+          }
         }
-        return;
       }
     }
 

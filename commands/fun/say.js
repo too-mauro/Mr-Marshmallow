@@ -30,16 +30,20 @@ module.exports = {
     if (message.guild.member(bot.user).hasPermission("MANAGE_MESSAGES")) { message.delete(); }
 
     // check if the string has a blacklisted word and stop here if at least 1 is found
-    const configFile = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
-    if (configFile.wordfilter.enabled) {
-      let configBlackList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/blacklist.json`, 'utf8'));
-      const blocked = configBlackList.wordfilter.filter(w => message.content.toLowerCase().match(new RegExp(w, 'g')));
+    const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
+    if (serverConfig.wordfilter.enabled) {
+      let serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
+      const blocked = serverDenyList.wordfilter.filter(word => message.content.toLowerCase().includes(word));
       if (blocked.length > 0) {
-        if (configFile.wordfilter.warnings.enabled) {
-          let warningMessage = configFile.wordfilter.warnings.message.replace(/username/g, message.author);
-          message.channel.send(warningMessage);
+        if (serverConfig.wordfilter.warnings.enabled) {
+          if (serverConfig.wordfilter.warnings.warnType == "channel") {
+            return message.channel.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
+          }
+          else if (serverConfig.wordfilter.warnings.warnType == "dm") {
+            message.author.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
+            return message.channel.send(`${message.author} has been warned for using a restricted word!`);
+          }
         }
-        return;
       }
     }
 

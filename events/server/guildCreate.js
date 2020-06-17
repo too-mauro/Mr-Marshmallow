@@ -25,7 +25,7 @@ module.exports = async (bot, guild) => {
 
       // Create the config.json file using default data from the bot's settings.json file.
       // This handles the server's prefix, DoorMat, CorkBoard, and word filter settings.
-      const configData = {
+      const serverConfig = {
         prefix: botConfigFile.defaults.prefix,
         doormat: {
           enabled: false,
@@ -39,7 +39,8 @@ module.exports = async (bot, guild) => {
           channelID: null,
           pinMode: botConfigFile.defaults.pinMode,
           pinThreshold: botConfigFile.defaults.pinThreshold,
-          allowNSFW: false
+          allowNSFW: false,
+          maxDenyListSize: botConfigFile.defaults.maxDenyListSize
         },
         maxQuotes: botConfigFile.defaults.maxQuotes,
         games: {
@@ -48,17 +49,18 @@ module.exports = async (bot, guild) => {
         },
         wordfilter: {
           enabled: false,
-          maxBlackListSize: botConfigFile.defaults.maxBlackListSize,
+          maxDenyListSize: botConfigFile.defaults.maxDenyListSize,
           warnings: {
             enabled: false,
-            message: botConfigFile.defaults.warnMessage
+            message: botConfigFile.defaults.warnMessage,
+            warnType: botConfigFile.defaults.warnType
           }
         }
       };
-      fs.writeFileSync(`./config/server/${guild.id}/config.json`, JSON.stringify(configData, null, 1), 'utf8');
+      fs.writeFileSync(`./config/server/${guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
 
-      // Copy the default blacklist.json file into the server's configuration folder. This file handles the blacklisted words and CorkBoard channels for the server.
-      fs.copyFileSync("./config/bot/defaults/blacklist.json", `./config/server/${guild.id}/blacklist.json`);
+      // Copy the default denylist.json file into the server's configuration folder. This file handles the non-allowed words and CorkBoard channels for the server.
+      fs.copyFileSync("./config/bot/defaults/denylist.json", `./config/server/${guild.id}/denylist.json`);
 
       // Copy the default quotes.json file into the server's quotes.json file, then create an empty text file for exporting them.
       fs.copyFileSync("./config/bot/defaults/quotes.json", `./config/server/${guild.id}/quotes.json`);

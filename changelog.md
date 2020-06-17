@@ -1,6 +1,17 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.8.1
+### Major Updates
+- Word filter now allows warning messages to be sent to user DMs instead of channels
+  - Warning messages send to channel by default
+### Minor Updates
+- CorkBoard now allows posts without images or text (such as videos or documents)
+### Bug-fixes
+- Fixed an issue in CorkBoard's democratic mode where posts with multiple pins had issues showing in the server's pin channel
+- Fixed an issue with the word filter where resetting to the defaults wipes out the server's config file
+
+
 ## v0.8
 ### Major Updates
 - General software updates and removals
@@ -16,17 +27,17 @@ This document serves as the complete change log for Mr. Marshmallow's developmen
   - "gameInProgress" element moved to new 'games' entry and has one for each game mode (trivia and riddle)
   - "status" and "channel" elements for DoorMat/CorkBoard changed to "enabled" and "channelID" (respectively) for clarity
 - All commands and events updated to reflect new bot/server config changes
-- New user-defined word blacklist filter
-  - Automatically detects messages with user-defined blacklisted words and deletes them if it can (requires **Manage Messages** permission)
-  - Default blacklist found in new *config/bot/defaults* directory
+- New user-defined word deny-list filter
+  - Automatically detects messages with user-defined restricted words and deletes them if it can (requires **Manage Messages** permission)
+  - Default deny-list found in new *config/bot/defaults* directory
   - New command `wordfilter` in "settings" category to set the server's options
-  - *message* event updated to check for blacklisted words if word filter option is on
+  - *message* event updated to check for restricted words if word filter option is on
   - *message* event now allows the bot to return the server's prefix regardless if the user adds something after the mention or not
-  - server prefix will not be returned if user has a blacklisted word with bot mention
+  - server prefix will not be returned if user has a restricted word with bot mention
 - CorkBoard feature now has channel blacklisting and NSFW channel toggling
   - Deny certain channels the ability to pin posts to the CorkBoard
   - Posts from NSFW channels don't get pinned by default, can toggle to allow NSFW pins
-  - `corkboard` command updated to allow blacklist settings and NSFW toggle configuration
+  - `corkboard` command updated to allow deny-list settings and NSFW toggle configuration
 - New server event: *guildBanAdd*, fires whenever a server member has been banned
   - New ban message added to bot's configuration file
   - `doormat` updated to allow ban message configuration

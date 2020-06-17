@@ -25,7 +25,8 @@
   "maxBlackListSize": 50,
   "warnings": {
    "enabled": false,
-   "message": "Nice try username, but you're not allowed to say that. <:marshAngry:696122058245013555>"
+   "message": "Nice try username, but you're not allowed to say that. <:marshAngry:696122058245013555>",
+   "warnType": "channel"
   }
  }
 }

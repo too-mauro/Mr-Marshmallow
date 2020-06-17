@@ -5,12 +5,10 @@ message to the pre-defined log channel stating the bot user is ready for use.
 */
 
 const fs = require("fs");
-const botConfigFile = require("../../config/bot/settings.json");
+const botConfigFile = JSON.parse(fs.readFileSync("./config/bot/settings.json", "utf8"));
+const version = JSON.parse(fs.readFileSync("./package.json")).version;
 
 module.exports = async (bot) => {
-
-  // Get bot's version from the package.json file.
-  const version = JSON.parse(fs.readFileSync("./package.json")).version;
 
   // Set bot's status to online and presence to playing a game of the help command.
   bot.user.setStatus("online");

@@ -31,12 +31,12 @@ module.exports = async (bot, reaction, user) => {
     }
 
     // Check if the channel is on the server's CorkBoard blacklist. If it is, stop here.
-    let serverBlacklist = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/blacklist.json`, 'utf8'));
-    if (serverBlacklist.corkboard.includes(message.channel.id)) return message.channel.send("Sorry, this channel is blacklisted from the CorkBoard.");
+    const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
+    if (serverDenyList.corkboard.includes(message.channel.id)) return message.channel.send("Sorry, this channel has been restricted from pinning posts to the CorkBoard.");
 
     // Check if channel is NSFW and whether the server allows NSFW pins. If the channel is NSFW and
     // the server doesn't allow NSFW posts, stop here.
-    if (!serverConfig.corkboard.allowNSFW && message.channel.nsfw) return message.channel.send("Sorry, NSFW channels currently aren't allowed to pin messages to the CorkBoard.");
+    if (!serverConfig.corkboard.allowNSFW && message.channel.nsfw) return message.channel.send("Sorry, NSFW channels have been restricted from pinning posts to the CorkBoard.");
 
     // check if there's a valid corkboard channel, and if the channel is deleted, automatically turn it off and reset the channel to null
     if (!serverConfig.corkboard.channelID) return;
@@ -61,44 +61,42 @@ module.exports = async (bot, reaction, user) => {
     if (pins) {
       const pin = pins.embeds[0].author.name.slice(4);
       const foundPin = pins.embeds[0];
-      const image = message.attachments.size > 0 ? await extension(reaction, message.attachments.array()[0].url) : '';
+      const image = foundPin.image ? await extension(foundPin.image.url) : '';
+      const pinMsg = await pinChannel.messages.fetch(pins.id);
       const embed = new discord.MessageEmbed()
         .setColor(foundPin.color)
         .setAuthor(`📌  ${parseInt(pin) + 1}`)
-        .setThumbnail(foundPin.thumbnail.url);
+        .setThumbnail(foundPin.thumbnail.url)
+        .setTimestamp()
+        .setFooter(`${bot.user.username} | ${message.id}`, bot.user.displayAvatarURL());
       for (let i = 0; i < foundPin.fields.length; i++) {
         embed.addField(foundPin.fields[i].name, foundPin.fields[i].value, foundPin.fields[i].inline);
       }
-        embed.setTimestamp()
-        .setImage(image)
-        .setFooter(`${bot.user.username} | ${message.id}`, bot.user.displayAvatarURL());
-      const pinMsg = await pinChannel.messages.fetch(pins.id);
+      if (image !== '') { embed.setImage(image); }
       await pinMsg.edit({ embed });
     }
     else {
-      // Otherwise, create a new pinned post.
-      // If the message doesn't meet the server-defined pin threshold, then stop.
+      /* Otherwise, create a new pinned post.
+      If the message doesn't meet the server-defined pin threshold, then stop. */
       if (message.reactions.cache.get('📌').count < serverConfig.corkboard.pinThreshold) return;
 
       const image = message.attachments.size > 0 ? await extension(message.attachments.array()[0].url) : '';
-      if (image === '' && message.cleanContent.length < 1) return message.channel.send(`**${user.username}**, you cannot pin an empty message.`);
       const embed = new discord.MessageEmbed()
         .setColor(message.guild.member(message.author).displayHexColor)
         .setAuthor(`📌  ${message.reactions.cache.get('📌').count}`)
         .setThumbnail(message.author.displayAvatarURL())
         .addField("Author", message.author, true)
-        .addField("Channel", message.channel, true);
-        if (message.cleanContent.length > 0) embed.addField("Message", message.cleanContent, false)
-        embed.setImage(image)
+        .addField("Channel", message.channel, true)
         .addField("Message", `[Jump to it!](https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id})`, true)
-        .setTimestamp(new Date())
+        .setTimestamp()
         .setFooter(`${bot.user.username} | ${message.id}`, bot.user.displayAvatarURL());
+      if (message.cleanContent.length > 0) { embed.addField("Message", message.cleanContent, false); }
+      if (image !== '') { embed.setImage(image); }
       await pinChannel.send({ embed });
-
     }
 }
 
-// Here we add the extension function to check if there's anything attached to the message.
+// This is the extension function to check if there's a picture attached to the message. No image will appear on posts with non-images.
 function extension(attachment) {
   const imageLink = attachment.split('.');
   const typeOfImage = imageLink[imageLink.length - 1];

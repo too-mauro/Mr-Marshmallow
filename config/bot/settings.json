@@ -13,7 +13,8 @@
 		"pinMode": "democratic",
 		"pinThreshold": 5,
 		"maxQuotes": 300,
-		"maxBlackListSize": 50,
-		"warnMessage": "Nice try username, but you're not allowed to say that. <:marshAngry:696122058245013555>"
+		"maxDenyListSize": 50,
+		"warnMessage": "Nice try username, but you're not allowed to say that. <:marshAngry:696122058245013555>",
+		"warnType": "channel"
 	}
 }

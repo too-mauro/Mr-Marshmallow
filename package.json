@@ -1,7 +1,7 @@
 {
   "name": "mr-marshmallow",
-  "version": "0.8.0",
-  "description": "A sweet marshmallow-based Discord bot made for fun!",
+  "version": "0.8.1",
+  "description": "A sweet marshmallow-based general purpose Discord bot!",
   "main": "server.js",
   "repository": {
     "type": "git",

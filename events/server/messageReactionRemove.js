@@ -24,14 +24,6 @@ module.exports = async (bot, reaction, user) => {
     // If the reaction isn't the pushpin emoji, stop here.
     if (reaction.emoji.name !== '📌') return;
 
-    // Check if the channel is on the server's CorkBoard blacklist. If it is, stop here.
-    let serverBlacklist = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/blacklist.json`, 'utf8'));
-    if (serverBlacklist.corkboard.includes(message.channel.id)) return message.channel.send("Sorry, this channel is blacklisted from the CorkBoard.");
-
-    // Check if channel is NSFW and whether the server allows NSFW pins. If the channel is NSFW and
-    // the server doesn't allow NSFW posts, stop here.
-    if (!serverConfig.corkboard.allowNSFW && message.channel.nsfw) return message.channel.send("Sorry, NSFW channels currently aren't allowed to pin messages to the CorkBoard.");
-
     // check if there's a valid corkboard channel, and if the channel is deleted, automatically turn it off and reset the channel to null
     if (!serverConfig.corkboard.channelID) return;
     let pinChannel = message.guild.channels.cache.find(c => c.id === serverConfig.corkboard.channelID);
@@ -53,25 +45,25 @@ module.exports = async (bot, reaction, user) => {
     if (pins) {
       const pin = pins.embeds[0].author.name.slice(4);
       const foundPin = pins.embeds[0];
-      const image = message.attachments.size > 0 ? await extension(message.attachments.array()[0].url) : '';
+      const image = foundPin.image ? await extension(foundPin.image.url) : '';
       const pinMsg = await pinChannel.messages.fetch(pins.id);
-      if (!pin || parseInt(pin) - 1 == 0) return pinMsg.delete({ timeout: 1000 });
+      if (!pin || parseInt(pin) - 1 < serverConfig.corkboard.pinThreshold) return pinMsg.delete({ timeout: 1000 });
       const embed = new discord.MessageEmbed()
         .setColor(foundPin.color)
         .setAuthor(`📌  ${parseInt(pin) - 1}`)
-        .setThumbnail(foundPin.thumbnail.url);
+        .setThumbnail(foundPin.thumbnail.url)
+        .setTimestamp()
+        .setFooter(`${bot.user.username} | ${message.id}`, bot.user.displayAvatarURL());
       for (let i = 0; i < foundPin.fields.length; i++) {
         embed.addField(foundPin.fields[i].name, foundPin.fields[i].value, foundPin.fields[i].inline);
       }
-        embed.setImage(image)
-        .setTimestamp()
-        .setFooter(`${bot.user.username} | ${message.id}`, bot.user.displayAvatarURL());
+      if (image !== '') { embed.setImage(image); }
       await pinMsg.edit({ embed });
     }
 
 }
 
-// Here we add the this.extension function to check if there's anything attached to the message.
+// This is the extension function to check if there's a picture attached to the message. No image will appear on posts with non-images.
 function extension(attachment) {
   const imageLink = attachment.split('.');
   const typeOfImage = imageLink[imageLink.length - 1];
