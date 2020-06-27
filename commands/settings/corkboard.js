@@ -52,7 +52,7 @@ module.exports = {
             });
 
             embed.setDescription(`**CorkBoard enabled.**`);
-            if (!serverConfig.corkboard.channelID && !serverConfig.corkboard.channelID.deleted) {
+            if (serverConfig.corkboard.channelID && !serverConfig.corkboard.channelID.deleted) {
               embed.addField(`The CorkBoard feature is now enabled.`, `A corkboard channel has already been set, so you're ready to go!`);
             }
             else {
@@ -151,7 +151,7 @@ module.exports = {
             });
 
             embed.setDescription(`**InstaPin Mode enabled.**`);
-            if (!serverConfig.corkboard.channelID && !serverConfig.corkboard.channelID.deleted) {
+            if (serverConfig.corkboard.channelID && !serverConfig.corkboard.channelID.deleted) {
               embed.addField(`InstaPin Mode is now enabled.`, `A corkboard channel has already been set, so you're ready to go!`);
             }
             else {
@@ -175,7 +175,7 @@ module.exports = {
             });
 
             embed.setDescription(`**Democratic Pin Mode enabled.**`);
-            if (!serverConfig.corkboard.channelID && !serverConfig.corkboard.channelID.deleted) {
+            if (serverConfig.corkboard.channelID && !serverConfig.corkboard.channelID.deleted) {
               embed.addField(`Democratic Pin Mode is now enabled.`, `A corkboard channel has already been set, so you're ready to go!`);
             }
             else {

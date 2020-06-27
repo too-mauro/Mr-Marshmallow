@@ -45,7 +45,7 @@ module.exports = {
             });
 
             embed.setDescription(`**DoorMat enabled.**`);
-            if (!serverConfig.doormat.channelID && !serverConfig.doormat.channelID.deleted) {
+            if (serverConfig.doormat.channelID && !serverConfig.doormat.channelID.deleted) {
               embed.addField(`The DoorMat feature is now enabled.`, `A doormat channel has already been set, so you're ready to go!`);
             }
             else {
