@@ -49,7 +49,7 @@ module.exports = async (bot, channel, time) => {
       if (mostRecentPin.author.bot) return channel.send("Sorry, I can't pin bot messages.");
 
       // Look if there is an image attached. If there is, include it in the embed.
-      const image = mostRecentPin.attachments.size > 0 ? await extension(mostRecentPin.attachments.array()[0].url) : '';
+      const image = mostRecentPin.attachments.size > 0 ? await extension(mostRecentPin.attachments.array()[0].url) : null;
       const embed = new discord.MessageEmbed()
         .setColor(mostRecentPin.channel.guild.member(mostRecentPin.author).displayHexColor)
         .setAuthor("📌 Message Pinned!")
@@ -60,7 +60,7 @@ module.exports = async (bot, channel, time) => {
         .setTimestamp()
         .setFooter(bot.user.username, bot.user.displayAvatarURL());
       if (mostRecentPin.cleanContent.length > 0) { embed.addField("Message", mostRecentPin.cleanContent, false); }
-      if (image !== '') { embed.setImage(image); }
+      if (image) { embed.setImage(image); }
       await pinChannel.send({ embed });
 
       // Remove the pinned message from the channel.

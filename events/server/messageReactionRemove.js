@@ -45,7 +45,7 @@ module.exports = async (bot, reaction, user) => {
     if (pins) {
       const pin = pins.embeds[0].author.name.slice(4);
       const foundPin = pins.embeds[0];
-      const image = foundPin.image ? await extension(foundPin.image.url) : '';
+      const image = foundPin.image ? await extension(foundPin.image.url) : null;
       const pinMsg = await pinChannel.messages.fetch(pins.id);
       if (!pin || parseInt(pin) - 1 < serverConfig.corkboard.pinThreshold) return pinMsg.delete({ timeout: 1000 });
       const embed = new discord.MessageEmbed()
@@ -57,7 +57,7 @@ module.exports = async (bot, reaction, user) => {
       for (let i = 0; i < foundPin.fields.length; i++) {
         embed.addField(foundPin.fields[i].name, foundPin.fields[i].value, foundPin.fields[i].inline);
       }
-      if (image !== '') { embed.setImage(image); }
+      if (image) { embed.setImage(image); }
       await pinMsg.edit({ embed });
     }
 

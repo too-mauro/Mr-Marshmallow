@@ -19,7 +19,7 @@ module.exports = {
     },
     run: async (bot, message, args) => {
 
-        if (!message.guild.member(message.author).hasPermission("MANAGE_GUILD") || !message.guild.member(message.author).hasPermission("ADMINISTRATOR")) {
+        if (!message.member.hasPermission("MANAGE_GUILD") || !message.member.hasPermission("ADMINISTRATOR")) {
           return message.channel.send(`**${message.author.username}**, you need to have the \`Manage Server\` or \`Administrator\` permissions to use this command!`);
         }
 
@@ -45,7 +45,7 @@ module.exports = {
             });
 
             embed.setDescription(`**DoorMat enabled.**`);
-            if (serverConfig.doormat.channelID !== null && !serverConfig.doormat.channelID.deleted) {
+            if (!serverConfig.doormat.channelID && !serverConfig.doormat.channelID.deleted) {
               embed.addField(`The DoorMat feature is now enabled.`, `A doormat channel has already been set, so you're ready to go!`);
             }
             else {
@@ -74,7 +74,7 @@ module.exports = {
           case 'channel':
             // Show the general help message for the channel argument.
             if (!args.slice(1) || args.slice(1).length < 1) {
-              embed.setDescription(`Sets the channel to send welcome and leave messages.`);
+              embed.setDescription(`Sets the channel to send welcome, leave, and ban messages.`);
               switch (serverConfig.doormat.channelID) {
                 case null:
                   embed.addField("Current DoorMat Channel:", `**None set!**`);

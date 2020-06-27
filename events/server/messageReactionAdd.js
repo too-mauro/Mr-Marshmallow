@@ -61,7 +61,7 @@ module.exports = async (bot, reaction, user) => {
     if (pins) {
       const pin = pins.embeds[0].author.name.slice(4);
       const foundPin = pins.embeds[0];
-      const image = foundPin.image ? await extension(foundPin.image.url) : '';
+      const image = foundPin.image ? await extension(foundPin.image.url) : null;
       const pinMsg = await pinChannel.messages.fetch(pins.id);
       const embed = new discord.MessageEmbed()
         .setColor(foundPin.color)
@@ -72,7 +72,7 @@ module.exports = async (bot, reaction, user) => {
       for (let i = 0; i < foundPin.fields.length; i++) {
         embed.addField(foundPin.fields[i].name, foundPin.fields[i].value, foundPin.fields[i].inline);
       }
-      if (image !== '') { embed.setImage(image); }
+      if (image) { embed.setImage(image); }
       await pinMsg.edit({ embed });
     }
     else {
@@ -80,9 +80,9 @@ module.exports = async (bot, reaction, user) => {
       If the message doesn't meet the server-defined pin threshold, then stop. */
       if (message.reactions.cache.get('📌').count < serverConfig.corkboard.pinThreshold) return;
 
-      const image = message.attachments.size > 0 ? await extension(message.attachments.array()[0].url) : '';
+      const image = message.attachments.size > 0 ? await extension(message.attachments.array()[0].url) : null;
       const embed = new discord.MessageEmbed()
-        .setColor(message.guild.member(message.author).displayHexColor)
+        .setColor(message.member.displayHexColor)
         .setAuthor(`📌  ${message.reactions.cache.get('📌').count}`)
         .setThumbnail(message.author.displayAvatarURL())
         .addField("Author", message.author, true)
@@ -91,7 +91,7 @@ module.exports = async (bot, reaction, user) => {
         .setTimestamp()
         .setFooter(`${bot.user.username} | ${message.id}`, bot.user.displayAvatarURL());
       if (message.cleanContent.length > 0) { embed.addField("Message", message.cleanContent, false); }
-      if (image !== '') { embed.setImage(image); }
+      if (image) { embed.setImage(image); }
       await pinChannel.send({ embed });
     }
 }

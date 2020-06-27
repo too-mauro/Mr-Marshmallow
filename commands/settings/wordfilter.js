@@ -21,7 +21,7 @@ module.exports = {
     },
     run: async (bot, message, args) => {
 
-      if (!message.guild.member(message.author).hasPermission("MANAGE_GUILD") || !message.guild.member(message.author).hasPermission("ADMINISTRATOR")) {
+      if (!message.member.hasPermission("MANAGE_GUILD") || !message.member.hasPermission("ADMINISTRATOR")) {
         return message.channel.send(`**${message.author.username}**, you need to have the \`Manage Server\` or \`Administrator\` permissions to use this command!`);
       }
 

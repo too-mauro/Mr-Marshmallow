@@ -1,6 +1,21 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.8.2
+### Major Updates
+- Mr. Marshmallow now requires **Ban Members** permission for sending ban messages
+  - Checks leaving member against ban logs and sends the appropriate message
+  - *guildBanAdd* event removed and code moved to *guildMemberRemove*
+### Minor Updates
+- Default leave and ban messages changed
+- `userinfo` command shows how long a user has boosted a server, if applicable
+- `invite` command link text slightly changed
+- `dab` command slightly changed
+- Slight code tweaks
+### Bug-fixes
+- Fixed an issue with the DoorMat where both the ban and leave messages appeared when a user was banned
+- Fixed an issue with the `quote` command where default quotes couldn't be restored
+
 ## v0.8.1
 ### Major Updates
 - Word filter now allows warning messages to be sent to user DMs instead of channels

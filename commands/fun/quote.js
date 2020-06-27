@@ -24,7 +24,7 @@ module.exports = {
     if (args[0] && isNaN(args[0])) { args[0] = args[0].toLowerCase(); }
     switch (args[0]) {
       case 'add':
-          if (!message.guild.member(message.author).hasPermission("MANAGE_MESSAGES")) {
+          if (!message.member.hasPermission("MANAGE_MESSAGES")) {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to add a quote!`);
           }
 
@@ -59,7 +59,7 @@ module.exports = {
 
       case 'delete':
           var pos = args.slice(1).join("");
-          if (!message.guild.member(message.author).hasPermission("MANAGE_MESSAGES")) {
+          if (!message.member.hasPermission("MANAGE_MESSAGES")) {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to delete a quote!`);
           }
           else if (!pos || isNaN(pos)) {
@@ -94,7 +94,7 @@ module.exports = {
           break;
 
       case 'list':
-          if (!message.guild.member(bot.user).hasPermission("EMBED_LINKS")) {
+          if (!message.guild.me.hasPermission("EMBED_LINKS")) {
             return message.channel.send(`**${message.author.username}**, I need the \`Embed Links\` permission for this to work!`);
           }
 
@@ -195,7 +195,7 @@ module.exports = {
           break;
 
       case 'export':
-          if (!message.guild.member(message.author).hasPermission("MANAGE_MESSAGES")) {
+          if (!message.member.hasPermission("MANAGE_MESSAGES")) {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to export the quotes!`);
           }
           fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
@@ -223,7 +223,7 @@ module.exports = {
           break;
 /*
       case 'import':
-          if (!message.guild.member(message.author).hasPermission("MANAGE_MESSAGES")) {
+          if (!message.member.hasPermission("MANAGE_MESSAGES")) {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to export the quotes!`);
           }
           fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
@@ -245,7 +245,7 @@ module.exports = {
           break;
           */
       case 'purge':
-          if (!message.guild.member(message.author).hasPermission("MANAGE_MESSAGES")) {
+          if (!message.member.hasPermission("MANAGE_MESSAGES")) {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to purge the quotes!`);
           }
 
@@ -289,7 +289,7 @@ module.exports = {
           break;
 
       case 'default':
-          if (!message.guild.member(message.author).hasPermission("MANAGE_MESSAGES")) {
+          if (!message.member.hasPermission("MANAGE_MESSAGES")) {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to revert the quotes to their defaults!`);
           }
 
@@ -309,7 +309,7 @@ module.exports = {
                 })
                 .then((collected) => {
                   if (collected.first().content.toLowerCase() === 'yes' || collected.first().content.toLowerCase() === 'y') {
-                      fs.copyFile('./config/bot/defaultquotes.json', `./config/server/${message.guild.id}/quotes.json`, (err) => {
+                      fs.copyFile('./config/bot/defaults/quotes.json', `./config/server/${message.guild.id}/quotes.json`, (err) => {
                         if (err) {
                           console.log(err);
                           return message.channel.send("Something went wrong while trying to reset the server's quotes to their defaults!");

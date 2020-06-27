@@ -21,7 +21,7 @@ module.exports = async (bot, message) => {
        get any arguments and search for a known command. If one is found, run it.
        (This has to be returned so the word filter doesn't run; if it wasn't, the filter might
        prevent the command from running properly.) */
-    let cleanPrefix = message.content.substr(0, serverConfig.prefix.length).toLowerCase();
+    const cleanPrefix = message.content.substr(0, serverConfig.prefix.length).toLowerCase();
     if (cleanPrefix == serverConfig.prefix) {
       const args = message.content.slice(cleanPrefix.length).trim().split(/ +/g);
       const cmd = args.shift().toLowerCase();
@@ -36,7 +36,7 @@ module.exports = async (bot, message) => {
       const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
       const blocked = serverDenyList.wordfilter.filter(word => message.content.toLowerCase().includes(word));
       if (blocked.length > 0) {
-        if (message.guild.member(bot.user).hasPermission("MANAGE_MESSAGES")) { message.delete(); }
+        if (message.guild.me.hasPermission("MANAGE_MESSAGES")) { message.delete(); }
         else { message.channel.send("I couldn't delete the message with the restricted word(s)!"); }
         if (serverConfig.wordfilter.warnings.enabled) {
           if (serverConfig.wordfilter.warnings.warnType == "channel") {

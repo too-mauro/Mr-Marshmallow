@@ -3,7 +3,6 @@ This command responds with a random joke.
 */
 
 const fetch = require("node-fetch");
-const jokeAPI = "https://official-joke-api.appspot.com/jokes/random";
 
 module.exports = {
   config: {
@@ -16,8 +15,8 @@ module.exports = {
   run: async (bot, message, args) => {
 
     try {
-      let response = await fetch(jokeAPI);
-      let json = await response.json();
+      const response = await fetch("https://official-joke-api.appspot.com/jokes/random");
+      const json = await response.json();
       message.channel.send(json.setup).then(msg => {
         setTimeout(function () {
           msg.edit(`${json.setup}\n${json.punchline}`);

@@ -8,8 +8,8 @@
 	"defaults": {
 		"prefix": "m!",
 		"joinMessage": "Hiya username, welcome to servername!",
-		"leaveMessage": "username just left the server.",
-		"banMessage": "username has been banned from the server!",
+		"leaveMessage": "Looks like username just left. See ya later!",
+		"banMessage": "username got banned from the server!",
 		"pinMode": "democratic",
 		"pinThreshold": 5,
 		"maxQuotes": 300,

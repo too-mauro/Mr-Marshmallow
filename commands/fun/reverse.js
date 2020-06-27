@@ -27,7 +27,7 @@ module.exports = {
     let text = args.join(" ").split("").reverse().join("");
 
     // check if bot has "manage messages" permissions
-    if (message.guild.member(bot.user).hasPermission("MANAGE_MESSAGES")) { message.delete(); }
+    if (message.guild.me.hasPermission("MANAGE_MESSAGES")) { message.delete(); }
 
     // check if the string has a blacklisted word and stop here if at least 1 is found
     const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));

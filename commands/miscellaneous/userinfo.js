@@ -17,7 +17,7 @@ module.exports = {
     run: async (bot, message, args) => {
 
       let member;
-      if (!args || args.length < 1) { member = message.guild.members.cache.get(message.author.id); }
+      if (!args || args.length < 1) { member = message.member; }
       else {
       		member = getUserFromMention(args[0], message.guild);
       		if (!member) {
@@ -32,26 +32,17 @@ module.exports = {
           .addField("**ID:**", member.id, true);
 
       // write out "do not disturb" if the user set themselves to dnd
-      if (member.presence.status == "dnd") {
-        embed.addField("**Status:**", "do not disturb", true);
-      }
-      else {
-        embed.addField("**Status:**", member.presence.status, true);
-      }
-      embed.addField("**Joined Discord On:**", member.user.createdAt, false)
-      .addField("**Joined the Server On:**", member.joinedAt, false)
+      embed.addField("**Status:**", (member.presence.status == "dnd") ? "do not disturb" : member.presence.status, true)
+      .addField("**Joined Discord On:**", member.user.createdAt, false)
+      .addField(`**Joined ${message.guild.name} On:**`, member.joinedAt, false);
+      if (member.premiumSince) embed.addField(`**Boosting ${message.guild.name} Since:**`, member.premiumSince, false);
 
-      var roles = member.roles.cache.filter(r => r.id !== message.guild.id);
-      if (roles.size < 1) {
-        embed.addField("**Roles:**", "No roles!", false);
-      }
-      else {
-        // List the user's roles from highest ranking to lowest ranking.
-        embed.addField(`**Roles (${roles.size}):**`, roles.map(r => r).sort((a, b) => b.position - a.position || b.id - a.id).join(" "), false);
-      }
+      // List out the user's roles, if any, from highest to lowest rank
+      const roles = member.roles.cache.filter(r => r.id !== message.guild.id);
+      embed.addField(`**Roles (${roles.size}):**`, (roles.size > 0) ? roles.map(r => r).sort((a, b) => b.position - a.position || b.id - a.id).join(" ") : "No roles!", false);
 
       if (member == message.guild.owner) { embed.setDescription("**Server Owner**", false); }
-      embed.setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
+      embed.setFooter(bot.user.username, bot.user.displayAvatarURL());
       return message.channel.send(embed);
 
     }
