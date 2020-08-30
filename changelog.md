@@ -1,6 +1,26 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.9
+### Major Updates
+- Discord.js upgraded to v12.3.1
+- `trivia` command fully works! Play a game with up to 10 total players with 15 questions a game!
+- New command category: **music**
+  - 12 new commands: `clear`, `disconnect`, `join`, `nowplaying`, `pause`, `play`, `queue`, `remove`, `repeat`, `resume`, `shuffle`, and `skip`
+  - New options to set now-playing messages, send embeds or plain text messages, or change channel topic now available in `music` command
+- New `changelog` command to show the latest updates with Mr. Marshmallow
+- Many helper functions moved to unified 'util.js' file under *config/bot* directory
+  - 'categories.js' removed, merged with this new file
+  - Some commands tweaked to adjust to this change
+- Repository README has an updated format
+### Minor Updates
+- `quote` command now exports to a JSON file, import is still in the works
+- Slight update in `quote list` embed footer
+- Owner property in *config/bot/settings.json* is now an array, renamed to owners
+  - Owner command updated to reflect change
+- Bot shutdown message slightly changed and now shows in console too
+- Console message in 'server.js' file removed
+
 ## v0.8.2
 ### Major Updates
 - Mr. Marshmallow now requires **Ban Members** permission for sending ban messages
@@ -25,7 +45,6 @@ This document serves as the complete change log for Mr. Marshmallow's developmen
 ### Bug-fixes
 - Fixed an issue in CorkBoard's democratic mode where posts with multiple pins had issues showing in the server's pin channel
 - Fixed an issue with the word filter where resetting to the defaults wipes out the server's config file
-
 
 ## v0.8
 ### Major Updates

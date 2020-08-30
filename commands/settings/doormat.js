@@ -5,7 +5,7 @@ permissions and prevents anyone who doesn't have either from running it.
 */
 
 const fs = require("fs");
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const { orange } = require("../../config/bot/colors.json");
 const { defaultPrefix } = require("../../config/bot/settings.json");
 
@@ -24,7 +24,7 @@ module.exports = {
         }
 
         let serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
-        const embed = new discord.MessageEmbed()
+        const embed = new MessageEmbed()
             .setColor(orange)
             .setTitle(`${bot.user.username} DoorMat Settings`);
 
@@ -32,8 +32,8 @@ module.exports = {
         switch (args[0]) {
           case 'on':
             if (serverConfig.doormat.enabled) {
-              embed.setDescription(`**DoorMat already enabled.**`);
-              embed.addField(`DoorMat already enabled for this server.`, `If you would like to turn it off, do \`${serverConfig.prefix}doormat off\`.`);
+              embed.setDescription(`**DoorMat already enabled.**`)
+              .addField(`DoorMat already enabled for this server.`, `If you would like to turn it off, do \`${serverConfig.prefix}doormat off\`.`);
               return message.channel.send({embed});
             }
             serverConfig.doormat.enabled = true;
@@ -55,8 +55,8 @@ module.exports = {
 
           case 'off':
             if (!serverConfig.doormat.enabled) {
-              embed.setDescription(`**DoorMat already disabled.**`);
-              embed.addField(`The DoorMat feature is already disabled for this server.`, `If you would like to turn it on, do \`${serverConfig.prefix}doormat on\`.`);
+              embed.setDescription(`**DoorMat already disabled.**`)
+              .addField(`The DoorMat feature is already disabled for this server.`, `If you would like to turn it on, do \`${serverConfig.prefix}doormat on\`.`);
               return message.channel.send({embed});
             }
             serverConfig.doormat.enabled = false;
@@ -67,22 +67,16 @@ module.exports = {
               }
             });
 
-            embed.setDescription(`**DoorMat disabled.**`);
-            embed.addField(`The DoorMat feature is disabled for this server.`, `If you would like to turn it on again, do \`${serverConfig.prefix}doormat on\`.`);
+            embed.setDescription(`**DoorMat disabled.**`)
+            .addField(`The DoorMat feature is disabled for this server.`, `If you would like to turn it on again, do \`${serverConfig.prefix}doormat on\`.`);
             return message.channel.send({embed});
 
           case 'channel':
             // Show the general help message for the channel argument.
             if (!args.slice(1) || args.slice(1).length < 1) {
-              embed.setDescription(`Sets the channel to send welcome, leave, and ban messages.`);
-              switch (serverConfig.doormat.channelID) {
-                case null:
-                  embed.addField("Current DoorMat Channel:", `**None set!**`);
-                  break;
-                default:
-                  embed.addField("Current DoorMat Channel:", `<#${serverConfig.doormat.channelID}>`);
-              }
-              embed.addField("To update:", `\`${serverConfig.prefix}doormat channel <channel name/mention>\``);
+              embed.setDescription(`Sets the channel to send welcome, leave, and ban messages.`)
+              .addField("Current DoorMat Channel:", serverConfig.doormat.channelID ? `<#${serverConfig.doormat.channelID}>` : `**None set!**`)
+              .addField("To update:", `\`${serverConfig.prefix}doormat channel <channel name/mention>\``);
               return message.channel.send({embed});
             }
 
@@ -215,24 +209,10 @@ module.exports = {
           default:
             // show general doormat settings
             embed.setDescription(`Turns the DoorMat feature on or off, changes the channel to send welcome, leave, and ban messages, and changes the messages themselves.`);
-            embed.addField("Change options with:", `on - turns on DoorMat\noff - turns off DoorMat\nchannel - sets the DoorMat channel\nwelcome - sets the welcome message\nleave - sets the leave message\nban - sets the ban message`);
-            switch (serverConfig.doormat.enabled) {
-              case false:
-                embed.addField("DoorMat:",  "**disabled**", true);
-                break;
-              case true:
-                embed.addField("DoorMat:",  "**enabled**", true);
-                break;
-            }
-            switch (serverConfig.doormat.channelID) {
-              case null:
-                embed.addField(`DoorMat Channel: `, `**None set!**`, true);
-                break;
-              default:
-                embed.addField(`DoorMat Channel: `, `<#${serverConfig.doormat.channelID}>`, true);
-                break;
-            }
-            embed.addField("Welcome Message: ", `${serverConfig.doormat.welcomeMessage}`)
+            embed.addField("Change options with:", `on - turns on DoorMat\noff - turns off DoorMat\nchannel - sets the DoorMat channel\nwelcome - sets the welcome message\nleave - sets the leave message\nban - sets the ban message`)
+            .addField("DoorMat:", serverConfig.doormat.enabled ? "**enabled**" : "**disabled**", true)
+            .addField(`DoorMat Channel: `, serverConfig.doormat.channelID ? `<#${serverConfig.doormat.channelID}>` : `**None set!**`, true)
+            .addField("Welcome Message: ", `${serverConfig.doormat.welcomeMessage}`)
             .addField("Leave Message: ", `${serverConfig.doormat.leaveMessage}`)
             .addField("Ban Message: ", `${serverConfig.doormat.banMessage}`);
 

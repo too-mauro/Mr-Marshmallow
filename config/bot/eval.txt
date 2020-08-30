@@ -1,1 +1,82 @@
-This is where evaluated code longer than 2000 characters will show up.
+GuildMember {
+  guild: Guild {
+    members: GuildMemberManager {
+      cacheType: [Function: Collection],
+      cache: [Collection [Map]],
+      guild: [Circular]
+    },
+    channels: GuildChannelManager {
+      cacheType: [Function: Collection],
+      cache: [Collection [Map]],
+      guild: [Circular]
+    },
+    roles: RoleManager {
+      cacheType: [Function: Collection],
+      cache: [Collection [Map]],
+      guild: [Circular]
+    },
+    presences: PresenceManager {
+      cacheType: [Function: Collection],
+      cache: [Collection [Map]]
+    },
+    voiceStates: VoiceStateManager {
+      cacheType: [Function: Collection],
+      cache: [Collection [Map]],
+      guild: [Circular]
+    },
+    deleted: false,
+    available: true,
+    id: '457755921397972993',
+    shardID: 0,
+    name: "The Rockin' Treehouse",
+    icon: 'af9350ec0086ac94a7105accd22b4b87',
+    splash: null,
+    region: 'us-east',
+    memberCount: 25,
+    large: false,
+    features: [ 'INVITE_SPLASH', 'ANIMATED_ICON' ],
+    applicationID: null,
+    afkTimeout: 900,
+    afkChannelID: '468734011393441793',
+    systemChannelID: null,
+    embedEnabled: undefined,
+    premiumTier: 1,
+    premiumSubscriptionCount: 2,
+    verificationLevel: 'MEDIUM',
+    explicitContentFilter: 'MEMBERS_WITHOUT_ROLES',
+    mfaLevel: 1,
+    joinedTimestamp: 1583631185978,
+    defaultMessageNotifications: 'MENTIONS',
+    systemChannelFlags: SystemChannelFlags { bitfield: 0 },
+    vanityURLCode: null,
+    description: null,
+    banner: null,
+    rulesChannelID: null,
+    publicUpdatesChannelID: null,
+    ownerID: '309411734081372162',
+    emojis: GuildEmojiManager {
+      cacheType: [Function: Collection],
+      cache: [Collection [Map]],
+      guild: [Circular]
+    }
+  },
+  user: ClientUser {
+    id: '493208779567923213',
+    bot: true,
+    username: 'Mr. Marshmallow',
+    discriminator: '4463',
+    avatar: '054ebe0f3c3ed8664da0185044c633db',
+    lastMessageID: '725888452591353856',
+    lastMessageChannelID: '516040830142644244',
+    verified: true,
+    mfaEnabled: true,
+    _typing: Map {},
+    flags: UserFlags { bitfield: 0 }
+  },
+  joinedTimestamp: 1583631185978,
+  lastMessageID: '725888452591353856',
+  lastMessageChannelID: '516040830142644244',
+  premiumSinceTimestamp: null,
+  deleted: false,
+  _roles: [ '492904586076749844', '686023658803822673' ]
+}

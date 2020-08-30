@@ -8,7 +8,8 @@ this will update the number of pins the post received to reflect the original po
 */
 
 const fs = require('fs');
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
+const { extension } = require("../../config/bot/util.js");
 
 module.exports = async (bot, reaction, user) => {
 
@@ -48,7 +49,7 @@ module.exports = async (bot, reaction, user) => {
 
     // look for pinned messages already in the corkboard channel with the message's ID. The try-catch block is necessary in case there are non-embed messages in the CorkBoard channel.
     const fetchedMessages = await pinChannel.messages.fetch({ limit: 100 });
-    var pins = undefined;
+    let pins = undefined;
     try {
       pins = fetchedMessages.find(m => m.embeds[0].footer.text.endsWith(message.id));
     }
@@ -63,7 +64,7 @@ module.exports = async (bot, reaction, user) => {
       const foundPin = pins.embeds[0];
       const image = foundPin.image ? await extension(foundPin.image.url) : null;
       const pinMsg = await pinChannel.messages.fetch(pins.id);
-      const embed = new discord.MessageEmbed()
+      const embed = new MessageEmbed()
         .setColor(foundPin.color)
         .setAuthor(`📌  ${parseInt(pin) + 1}`)
         .setThumbnail(foundPin.thumbnail.url)
@@ -81,7 +82,7 @@ module.exports = async (bot, reaction, user) => {
       if (message.reactions.cache.get('📌').count < serverConfig.corkboard.pinThreshold) return;
 
       const image = message.attachments.size > 0 ? await extension(message.attachments.array()[0].url) : null;
-      const embed = new discord.MessageEmbed()
+      const embed = new MessageEmbed()
         .setColor(message.member.displayHexColor)
         .setAuthor(`📌  ${message.reactions.cache.get('📌').count}`)
         .setThumbnail(message.author.displayAvatarURL())
@@ -94,13 +95,4 @@ module.exports = async (bot, reaction, user) => {
       if (image) { embed.setImage(image); }
       await pinChannel.send({ embed });
     }
-}
-
-// This is the extension function to check if there's a picture attached to the message. No image will appear on posts with non-images.
-function extension(attachment) {
-  const imageLink = attachment.split('.');
-  const typeOfImage = imageLink[imageLink.length - 1];
-  const image = /(jpg|jpeg|png|gif)/gi.test(typeOfImage);
-  if (!image) return '';
-  return attachment;
 }

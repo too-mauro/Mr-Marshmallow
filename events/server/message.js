@@ -10,15 +10,16 @@ const fs = require("fs");
 module.exports = async (bot, message) => {
 
     /* Don't do anything if the message is in a direct message, the author is a
-       bot, or the server is unavailable. */
+       bot, the server is unavailable, or the bot has no permission to send messages. */
     if (message.author.bot || message.channel.type == "dm") return;
-    else if (!message.guild.available) return;
+    else if (!message.guild.available || !message.guild.me.permissionsIn(message.channel).has("SEND_MESSAGES")) return;
 
     // Get the server's configuration file data.
     const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
+    const mentionRegex = new RegExp(`^(<@!?${bot.user.id}>)\\s*`);
 
-    /* Make the prefix lowercase, if applicable, which ensures a case-insensitive prefix. Then,
-       get any arguments and search for a known command. If one is found, run it.
+    /* Make the prefix lowercase (if applicable) which ensures a case-insensitive
+       prefix. Then, get any arguments and search for a known command. If one is found, run it.
        (This has to be returned so the word filter doesn't run; if it wasn't, the filter might
        prevent the command from running properly.) */
     const cleanPrefix = message.content.substr(0, serverConfig.prefix.length).toLowerCase();
@@ -30,13 +31,15 @@ module.exports = async (bot, message) => {
     }
 
     /* At this point, no command was found. If the server's blacklist filter is enabled, check for
-      words in the filter. If any are found, try to delete it and warn the user with the server's
-      warning message (if the warn user option is set). */
+      words in the filter by removing spaces in the message. If any are found, try to delete it
+      and warn the user with the server's warning message (if the warn user option is set). */
     if (serverConfig.wordfilter.enabled) {
       const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
-      const blocked = serverDenyList.wordfilter.filter(word => message.content.toLowerCase().includes(word));
+      const blocked = serverDenyList.wordfilter.filter(word => message.content.toLowerCase().replace(/ +/g, "").includes(word));
       if (blocked.length > 0) {
-        if (message.guild.me.hasPermission("MANAGE_MESSAGES")) { message.delete(); }
+        if (message.guild.me.permissionsIn(message.channel).has("MANAGE_MESSAGES")) {
+          message.delete();
+        }
         else { message.channel.send("I couldn't delete the message with the restricted word(s)!"); }
         if (serverConfig.wordfilter.warnings.enabled) {
           if (serverConfig.wordfilter.warnings.warnType == "channel") {
@@ -51,7 +54,8 @@ module.exports = async (bot, message) => {
     }
 
     // If a user mentions the bot outside of a command, return the server's prefix.
-    if (message.content.includes("<@") && message.content.includes(`${bot.user.id}>`)) {
+    if (mentionRegex.test(message.content)) {
       return message.channel.send(`Forgot my prefix? **${message.guild.name}**'s prefix is: \` ${serverConfig.prefix} \``);
     }
+
 }

@@ -8,7 +8,7 @@ saying that it joined a new server.
 */
 
 const fs = require("fs");
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const botConfigFile = JSON.parse(fs.readFileSync("./config/bot/settings.json", 'utf8'));
 const { green_dark } = require("../../config/bot/colors.json");
 
@@ -42,11 +42,6 @@ module.exports = async (bot, guild) => {
           allowNSFW: false,
           maxDenyListSize: botConfigFile.defaults.maxDenyListSize
         },
-        maxQuotes: botConfigFile.defaults.maxQuotes,
-        games: {
-          triviaInProgress: false,
-          riddlesInProgress: false
-        },
         wordfilter: {
           enabled: false,
           maxDenyListSize: botConfigFile.defaults.maxDenyListSize,
@@ -55,23 +50,34 @@ module.exports = async (bot, guild) => {
             message: botConfigFile.defaults.warnMessage,
             warnType: botConfigFile.defaults.warnType
           }
-        }
+        },
+        music: {
+          nowPlayingEnabled: true,
+          embedEnabled: true
+        },
+        games: {
+          triviaInProgress: false,
+          riddlesInProgress: false
+        },
+        maxQuotes: botConfigFile.defaults.maxQuotes
       };
       fs.writeFileSync(`./config/server/${guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
 
       // Copy the default denylist.json file into the server's configuration folder. This file handles the non-allowed words and CorkBoard channels for the server.
       fs.copyFileSync("./config/bot/defaults/denylist.json", `./config/server/${guild.id}/denylist.json`);
 
-      // Copy the default quotes.json file into the server's quotes.json file, then create an empty text file for exporting them.
+      // Copy the default quotes.json file into the server's quotes.json file.
       fs.copyFileSync("./config/bot/defaults/quotes.json", `./config/server/${guild.id}/quotes.json`);
-      fs.writeFileSync(`./config/server/${guild.id}/quotes.txt`, "", 'utf8');
+
+      // Write a file for the server's music queue.
+      fs.writeFileSync(`./config/server/${guild.id}/music.json`, JSON.stringify({queue:[]}, null, 0), 'utf8');
     }
 
     // Send a message to the console.
     console.log(`Joined ${guild.name} (ID: ${guild.id})!`);
 
     // Try to send the "Server Joined" message to the log channel.
-    const embed = new discord.MessageEmbed()
+    const embed = new MessageEmbed()
         .setColor(green_dark)
         .setTitle(`Joined a Server!`)
         .addField("Name:", `**${guild.name}**`, true)

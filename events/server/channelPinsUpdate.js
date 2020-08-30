@@ -7,7 +7,8 @@ will not return anything.
 */
 
 const fs = require("fs");
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
+const { extension } = require("../../config/bot/util.js");
 
 module.exports = async (bot, channel, time) => {
 
@@ -50,7 +51,7 @@ module.exports = async (bot, channel, time) => {
 
       // Look if there is an image attached. If there is, include it in the embed.
       const image = mostRecentPin.attachments.size > 0 ? await extension(mostRecentPin.attachments.array()[0].url) : null;
-      const embed = new discord.MessageEmbed()
+      const embed = new MessageEmbed()
         .setColor(mostRecentPin.channel.guild.member(mostRecentPin.author).displayHexColor)
         .setAuthor("📌 Message Pinned!")
         .setThumbnail(mostRecentPin.author.displayAvatarURL())
@@ -64,16 +65,7 @@ module.exports = async (bot, channel, time) => {
       await pinChannel.send({ embed });
 
       // Remove the pinned message from the channel.
-      if (channel.guild.member(bot.user).hasPermission("MANAGE_MESSAGES")) { mostRecentPin.unpin(); }
+      if (channel.guild.me.permissionsIn(channel).has("MANAGE_MESSAGES")) { mostRecentPin.unpin(); }
       else return channel.send("I couldn't unpin the latest pinned message! Do I have the `Manage Messages` permission...?");
     }
-}
-
-// This is the extension function to check if there's a picture attached to the message. This won't work for videos.
-function extension(attachment) {
-  const imageLink = attachment.split('.');
-  const typeOfImage = imageLink[imageLink.length - 1];
-  const image = /(jpg|jpeg|png|gif)/gi.test(typeOfImage);
-  if (!image) return '';
-  return attachment;
 }

@@ -3,7 +3,7 @@ This command evaluates both JavaScript and Discord.js code, and can only be
 executed by the bot owner defined in the config/bot/settings.json file.
 */
 
-const { ownerID } = require("../../config/bot/settings.json");
+const { owners } = require("../../config/bot/settings.json");
 const { inspect } = require("util");
 const fs = require("fs");
 
@@ -18,7 +18,7 @@ module.exports = {
     },
     run: async (bot, message, args) => {
 
-        if (message.author.id != ownerID) return message.channel.send(`**${message.author.username}**, you must be the bot owner to run this command.`);
+        if (!owners.includes(message.author.id)) return message.channel.send(`**${message.author.username}**, you must be the bot owner to run this command.`);
 
         if (!args || args.length < 1) {
           return message.channel.send(`**${message.author.username}**, please enter some code to evaluate!`);

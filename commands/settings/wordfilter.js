@@ -6,7 +6,7 @@ running it.
 */
 
 const fs = require("fs");
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const { orange } = require("../../config/bot/colors.json");
 const botConfigFile = JSON.parse(fs.readFileSync("./config/bot/settings.json", "utf8"));
 const defaultDenyList = JSON.parse(fs.readFileSync("./config/bot/defaults/denylist.json", "utf8"));
@@ -15,9 +15,9 @@ module.exports = {
     config: {
         name: "wordfilter",
         aliases: ["wf"],
-        usage: "(on) (off) (add <word>) (remove <word>) (warn) (purge) (default)",
+        usage: "(on) (off) (add <word>) (remove <word>) (warn <on> <off> <message (message)>) (purge) (default)",
         category: "settings",
-        description: "Sets the server's restricted word list. Requires **Manage Server** permission."
+        description: "Changes settings for the server's restricted word list. Requires **Manage Server** permission."
     },
     run: async (bot, message, args) => {
 
@@ -27,7 +27,7 @@ module.exports = {
 
       const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
       const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
-      const embed = new discord.MessageEmbed()
+      const embed = new MessageEmbed()
           .setColor(orange)
           .setTitle(`${bot.user.username} Word Filter Settings`);
 
@@ -341,15 +341,8 @@ module.exports = {
         default:
           // show general wordfilter settings
           embed.setDescription(`Turns the Word Filter feature on or off, adds and removes words from the deny-list, sets a warning and message for the user, and purges or resets them to default.`)
-          .addField("Change options with:", `on - turns on Word Filter\noff - turns off Word Filter\nadd - adds a word to the deny-list\nremove - removes a word from the deny-list\nwarn - warn the user when they use a restricted word\npurge - purges the current deny-list\ndefault - resets the deny-list to the defaults`);
-          switch (serverConfig.wordfilter.enabled) {
-            case false:
-              embed.addField("Word Filter:",  "**disabled**", true);
-              break;
-            case true:
-              embed.addField("Word Filter:",  "**enabled**", true);
-              break;
-          }
+          .addField("Change options with:", `on - turns on Word Filter\noff - turns off Word Filter\nadd - adds a word to the deny-list\nremove - removes a word from the deny-list\nwarn - warn the user when they use a restricted word\npurge - purges the current deny-list\ndefault - resets the deny-list to the defaults`)
+          .addField("Word Filter:", serverConfig.wordfilter.enabled ? "**enabled**" : "**disabled**", true);
           if (serverDenyList.wordfilter.length < 1) {
             embed.addField(`Current Deny-list:`, "**No restricted words set!**");
           }

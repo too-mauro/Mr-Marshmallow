@@ -5,14 +5,15 @@ and prevents anyone who doesn't have either from running it.
 */
 
 const fs = require("fs");
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const { orange } = require("../../config/bot/colors.json");
+const defaultPrefix = JSON.parse(fs.readFileSync("./config/bot/settings.json", "utf8")).defaults.prefix;
 
 module.exports = {
     config: {
         name: "prefix",
         aliases: ["pre"],
-        usage: "(prefix)",
+        usage: "<prefix>",
         category: "settings",
         description: "Sets the server's prefix. Requires **Manage Server** permission."
     },
@@ -22,16 +23,16 @@ module.exports = {
           return message.channel.send(`**${message.author.username}**, you need to have the \`Manage Server\` or \`Administrator\` permissions to use this command!`);
         }
 
-        let serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
-        const embed = new discord.MessageEmbed()
+        const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
+        const embed = new MessageEmbed()
             .setColor(orange)
             .setTitle(`${bot.user.username} Prefix Settings`);
 
         if (!args || args.length < 1) {
             embed.setDescription(`Changes the prefix used to call ${bot.user.username}.`);
-            embed.addField("Current Prefix:", `\` ${serverConfig.prefix} \` `);
-            embed.addField("To update:", `\`${serverConfig.prefix}prefix <new prefix>\``);
-            embed.addField("Valid Settings:", "`Any text, up to 5 characters (e.g. m!)`");
+            embed.addField("Current Prefix:", `\` ${serverConfig.prefix} \` `)
+            .addField("To update:", `\`${serverConfig.prefix}prefix <new prefix>\``)
+            .addField("Valid Settings:", `\`Any text, up to 5 characters (e.g. ${defaultPrefix})\``);
 
             return message.channel.send({embed});
         }

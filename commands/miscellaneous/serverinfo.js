@@ -4,7 +4,7 @@ how many members and roles there are, when the server was created, and how many
 server boosts (and level, if applicable) it has.
 */
 
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const { aqua } = require("../../config/bot/colors.json");
 
 module.exports = {
@@ -16,7 +16,7 @@ module.exports = {
         aliases: ["si", "sinfo", "serverdesc"]
     },
     run: async (bot, message, args) => {
-      let embed = new discord.MessageEmbed()
+      let embed = new MessageEmbed()
           .setColor(aqua)
           .setTitle(`${message.guild.name} Info`)
           .setThumbnail(message.guild.iconURL())

@@ -9,7 +9,8 @@ corkboard channel.
 */
 
 const fs = require('fs');
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
+const { extension } = require("../../config/bot/util.js");
 
 module.exports = async (bot, reaction, user) => {
 
@@ -34,7 +35,7 @@ module.exports = async (bot, reaction, user) => {
 
     // look for pinned messages already in the corkboard channel with the message's ID. The try-catch block is necessary in case there are non-embed messages in the CorkBoard channel.
     const fetchedMessages = await pinChannel.messages.fetch({ limit: 100 });
-    var pins = undefined;
+    let pins = undefined;
     try { pins = fetchedMessages.find(m => m.embeds[0].footer.text.endsWith(message.id)); }
     catch (e) {
       console.log(e);
@@ -48,7 +49,7 @@ module.exports = async (bot, reaction, user) => {
       const image = foundPin.image ? await extension(foundPin.image.url) : null;
       const pinMsg = await pinChannel.messages.fetch(pins.id);
       if (!pin || parseInt(pin) - 1 < serverConfig.corkboard.pinThreshold) return pinMsg.delete({ timeout: 1000 });
-      const embed = new discord.MessageEmbed()
+      const embed = new MessageEmbed()
         .setColor(foundPin.color)
         .setAuthor(`📌  ${parseInt(pin) - 1}`)
         .setThumbnail(foundPin.thumbnail.url)
@@ -60,14 +61,4 @@ module.exports = async (bot, reaction, user) => {
       if (image) { embed.setImage(image); }
       await pinMsg.edit({ embed });
     }
-
-}
-
-// This is the extension function to check if there's a picture attached to the message. No image will appear on posts with non-images.
-function extension(attachment) {
-  const imageLink = attachment.split('.');
-  const typeOfImage = imageLink[imageLink.length - 1];
-  const image = /(jpg|jpeg|png|gif)/gi.test(typeOfImage);
-  if (!image) return '';
-  return attachment;
 }

@@ -5,7 +5,7 @@ data remains.
 */
 
 const fs = require("fs");
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const botConfigFile = JSON.parse(fs.readFileSync("./config/bot/settings.json", 'utf8'));
 const { red_dark } = require("../../config/bot/colors.json");
 
@@ -15,7 +15,7 @@ module.exports = async (bot, guild) => {
   console.log(`Left ${guild.name} (ID: ${guild.id})...`);
 
   // Try to send the "left a server" message to the log channel.
-  const embed = new discord.MessageEmbed()
+  const embed = new MessageEmbed()
       .setColor(red_dark)
       .setTitle(`Left a Server...`)
       .addField("Name:", `**${guild.name}**`, true)

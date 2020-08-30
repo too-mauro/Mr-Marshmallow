@@ -3,7 +3,7 @@ This command reloads a given command, and can only be executed by the bot owner
 defined in the config/bot/settings.json file.
 */
 
-const { ownerID } = require("../../config/bot/settings.json");
+const { owners } = require("../../config/bot/settings.json");
 const { readdirSync } = require("fs");
 
 module.exports = {
@@ -16,7 +16,7 @@ module.exports = {
     },
     run: async (bot, message, args) => {
 
-      if (message.author.id != ownerID) return message.channel.send(`**${message.author.username}**, you must be the bot owner to run this command.`);
+      if (!owners.includes(message.author.id)) return message.channel.send(`**${message.author.username}**, you must be the bot owner to run this command.`);
       else if (!args || args.length < 1) {
         return message.channel.send(`**${message.author.username}**, please provide a command to reload!`);
       }

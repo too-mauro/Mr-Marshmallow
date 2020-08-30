@@ -4,6 +4,8 @@ With one, the user can dab on another user EarthBound-style, and, with luck and 
 trusty random number generator, they can output up to 1000 damage!
 */
 
+const { getUserFromMention } = require("../../config/bot/util.js");
+
 module.exports = {
   config: {
       name: "dab",
@@ -17,7 +19,7 @@ module.exports = {
     // If there is no argument, just give the user a regular dab.
     const dabEmote = "<:marshDab:648374543005777950>";
     if (!args || args.length < 1) {
-      if (message.guild.me.hasPermission("ATTACH_FILES")) {
+      if (message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES")) {
         return message.channel.send({files: ["./config/bot/media/marshDab.png"]});
       }
       else return message.channel.send(dabEmote);
@@ -44,13 +46,4 @@ module.exports = {
 
     return message.channel.send(`${battleMessage}\n${customText}`);
   }
-}
-
-function getUserFromMention(mention, guild) {
-  // The id is the first and only match found by the RegEx.
-  const matches = mention.match(/^<@!?(\d+)>$/);
-  // If supplied variable was not a mention, matches will be null instead of an array.
-  if (!matches) return;
-  // However the first element in the matches array will be the entire mention, so use index 1.
-  return guild.members.cache.get(matches[1]);
 }

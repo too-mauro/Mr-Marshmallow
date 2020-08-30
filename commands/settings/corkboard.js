@@ -6,7 +6,7 @@ doesn't have either from running it.
 */
 
 const fs = require("fs");
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const { orange } = require("../../config/bot/colors.json");
 
 module.exports = {
@@ -23,9 +23,10 @@ module.exports = {
           return message.channel.send(`**${message.author.username}**, you need to have the \`Manage Server\` or \`Administrator\` permissions to use this command!`);
         }
 
-        let serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
-        let serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
-        const embed = new discord.MessageEmbed()
+        let str;
+        const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
+        const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
+        const embed = new MessageEmbed()
             .setColor(orange)
             .setTitle(`${bot.user.username} CorkBoard Settings`);
 
@@ -151,7 +152,7 @@ module.exports = {
             });
 
             embed.setDescription(`**InstaPin Mode enabled.**`);
-            if (serverConfig.corkboard.channelID && !serverConfig.corkboard.channelID.deleted) {
+            if (!serverConfig.corkboard.channelID && !serverConfig.corkboard.channelID.deleted) {
               embed.addField(`InstaPin Mode is now enabled.`, `A corkboard channel has already been set, so you're ready to go!`);
             }
             else {
@@ -175,7 +176,7 @@ module.exports = {
             });
 
             embed.setDescription(`**Democratic Pin Mode enabled.**`);
-            if (serverConfig.corkboard.channelID && !serverConfig.corkboard.channelID.deleted) {
+            if (!serverConfig.corkboard.channelID && !serverConfig.corkboard.channelID.deleted) {
               embed.addField(`Democratic Pin Mode is now enabled.`, `A corkboard channel has already been set, so you're ready to go!`);
             }
             else {
@@ -255,7 +256,7 @@ module.exports = {
               if (serverDenyList.corkboard.length < 1) {
                 embed.addField("Current Deny-list:", "**No restricted channels set!**", false);
               } else {
-                var str = '';
+                str = '';
                 for (var bc = 0; bc < serverDenyList.corkboard.length - 1; bc++) {
                   str += `<#${serverDenyList.corkboard[bc]}> | `;
                 }
@@ -307,7 +308,7 @@ module.exports = {
                   return message.channel.send("Something went wrong while trying to update the CorkBoard deny-list! Please try again later.");
                 }
                 else {
-                  var str = '';
+                  str = '';
                   for (var bc = 0; bc < serverDenyList.corkboard.length - 1; bc++) {
                     str += `<#${serverDenyList.corkboard[bc]}> | `;
                   }
@@ -330,31 +331,10 @@ module.exports = {
           default:
             // show general corkboard settings
             embed.setDescription(`Turns the CorkBoard feature on or off, changes the channel to show pinned messages, and changes the minimum number of pins for a post to show in the pin channel.`);
-            embed.addField("Change options with:", `on - turns on CorkBoard\noff - turns off CorkBoard\nchannel - sets the CorkBoard channel\ndemocratic - toggles Democratic Mode (react with 📌 to pin posts)\ninstapin - toggles InstaPin Mode (pin a message with "pin message")\npins - sets the number of pin reactions needed for a post to show in the corkboard channel\nnsfw - allow/deny pins from NSFW channels\ndeny - deny pins from certain channels`);
-            switch (serverConfig.corkboard.enabled) {
-              case false:
-                embed.addField("CorkBoard:",  "**disabled**", true);
-                break;
-              case true:
-                embed.addField("CorkBoard:",  "**enabled**", true);
-                break;
-            }
-            switch (serverConfig.corkboard.channelID) {
-              case null:
-                embed.addField(`CorkBoard Channel: `, `**None set!**`, true);
-                break;
-              default:
-                embed.addField(`CorkBoard Channel: `, `<#${serverConfig.corkboard.channelID}>`, true);
-                break;
-            }
-            switch(serverConfig.corkboard.allowNSFW) {
-              case true:
-                embed.addField(`Allow NSFW Pins:`, "**yes**", true);
-                break;
-              case false:
-                embed.addField(`Allow NSFW Pins:`, "**no**", true);
-                break;
-            }
+            embed.addField("Change options with:", `on - turns on CorkBoard\noff - turns off CorkBoard\nchannel - sets the CorkBoard channel\ndemocratic - toggles Democratic Mode (react with 📌 to pin posts)\ninstapin - toggles InstaPin Mode (pin a message with "pin message")\npins - sets the number of pin reactions needed for a post to show in the corkboard channel\nnsfw - allow/deny pins from NSFW channels\ndeny - deny pins from certain channels`)
+            .addField("CorkBoard:", serverConfig.corkboard.enabled ? "**enabled**" : "**disabled**", true)
+            .addField(`CorkBoard Channel: `, serverConfig.corkboard.channelID ? `<#${serverConfig.corkboard.channelID}>` : `**None set!**`, true)
+            .addField(`Allow NSFW Pins:`, serverConfig.corkboard.allowNSFW ? "**yes**" : "**no**", true);
             switch (serverConfig.corkboard.pinMode) {
               case "democratic":
                 embed.addField("Pin Mode: ", "`Democratic`", true)
@@ -364,8 +344,8 @@ module.exports = {
                 embed.addField("Pin Mode: ", "`InstaPin`", true);
                 break;
             }
-            var str = '';
-            for (var bc = 0; bc < serverDenyList.corkboard.length - 1; bc++) {
+            let str = '';
+            for (let bc = 0; bc < serverDenyList.corkboard.length - 1; bc++) {
               str += `<#${serverDenyList.corkboard[bc]}> | `;
             }
             str += `<#${serverDenyList.corkboard[serverDenyList.corkboard.length - 1]}>`;

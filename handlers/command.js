@@ -5,7 +5,7 @@ adds all the command files within said directories into memory.
 */
 
 const { readdirSync } = require("fs");
-const { getCategories } = require("../config/bot/categories.js");
+const { getCategories } = require("../config/bot/util.js");
 
 module.exports = (bot) => {
     getCategories().forEach(dirs => {

@@ -1,9 +1,7 @@
-/*
-This command returns an invite link to the support server, the bot, and a link
-to the GitHub repository.
-*/
+/* This command returns an invite link to the support server, the bot, and a link
+to the GitHub repository. */
 
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const { purple_light } = require("../../config/bot/colors.json");
 
 module.exports = {
@@ -16,13 +14,13 @@ module.exports = {
     },
     run: async (bot, message, args) => {
 
-      let embed = new discord.MessageEmbed()
+      let embed = new MessageEmbed()
           .setColor(purple_light)
           .setTitle(`${bot.user.username} Invites`)
           .setThumbnail(bot.user.displayAvatarURL())
-          .addField("**Support Server**", `[Hang out in the Rockin' Treehouse!](https://discord.com/invite/UA6tK26)`)
-          .addField("**Bot Invite Link**", `Coming Soon! <:marshWink:696118146188181525>`)
-          .addField("**GitHub Repository**", `[Check out the source code!](https://github.com/too-mauro/Mr-Marshmallow)`)
+          .addField("**Support Server**", "[Hang out in the Rockin' Treehouse!](https://discord.com/invite/UA6tK26)")
+          .addField("**Bot Invite Link**", "Coming Soon! <:marshWink:696118146188181525>")
+          .addField("**GitHub Repository**", "[Check out the source code!](https://github.com/too-mauro/Mr-Marshmallow)")
           .setFooter(bot.user.username, bot.user.displayAvatarURL());
 
       return message.channel.send(embed);

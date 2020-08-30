@@ -6,7 +6,7 @@ quotes, or reset them to the defaults.
 */
 
 const fs = require("fs");
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const { purple_medium } = require("../../config/bot/colors.json");
 
 module.exports = {
@@ -20,6 +20,7 @@ module.exports = {
   run: async (bot, message, args) => {
 
     const maxQuotes = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`)).maxQuotes;
+    const quoteFile = `./config/server/${message.guild.id}/quotes.json`;
 
     if (args[0] && isNaN(args[0])) { args[0] = args[0].toLowerCase(); }
     switch (args[0]) {
@@ -33,7 +34,7 @@ module.exports = {
           else if (newQuote.length > 500) {
             return message.channel.send(`Sorry **${message.author.username}**, your quote is too long!`);
           }
-          fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
+          fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
               console.log(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
@@ -44,7 +45,7 @@ module.exports = {
                 return message.channel.send(`Sorry **${message.author.username}**, I can only store up to ${maxQuotes} quotes. If you want to add another one, please delete an existing one.`);
               }
               file.quotes.push(newQuote);
-              fs.writeFile(`./config/server/${message.guild.id}/quotes.json`, JSON.stringify(file, null, 1), 'utf8', (err) => {
+              fs.writeFile(quoteFile, JSON.stringify(file, null, 1), 'utf8', (err) => {
                 if (err) {
                   console.log(err);
                   return message.channel.send(`Sorry **${message.author.username}**, I couldn't store your quote!`);
@@ -65,7 +66,7 @@ module.exports = {
           else if (!pos || isNaN(pos)) {
             return message.channel.send(`**${message.author.username}**, please enter the quote's number!`);
           }
-          fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
+          fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
               console.log(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
@@ -80,7 +81,7 @@ module.exports = {
                 return message.channel.send(`**${message.author.username}**, there's no quote at that position!`);
               }
               file.quotes.splice((cleanInt - 1), 1);
-              fs.writeFile(`./config/server/${message.guild.id}/quotes.json`, JSON.stringify(file, null, 1), 'utf8', (err) => {
+              fs.writeFile(quoteFile, JSON.stringify(file, null, 1), 'utf8', (err) => {
                 if (err) {
                   console.log(err);
                   return message.channel.send(`Sorry **${message.author.username}**, I couldn't delete your quote!`);
@@ -98,7 +99,7 @@ module.exports = {
             return message.channel.send(`**${message.author.username}**, I need the \`Embed Links\` permission for this to work!`);
           }
 
-          fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
+          fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
               console.log(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
@@ -118,13 +119,13 @@ module.exports = {
               let qPos = 0;
 
               var pLimit = Math.min(pageLength, file.quotes.length);
-              const embed = new discord.MessageEmbed()
+              const embed = new MessageEmbed()
                   .setColor(purple_medium)
                   .setAuthor(`${message.guild.name} Quotes`, message.guild.iconURL())
               for (qPos; qPos < pLimit; qPos++) {
                 embed.addField(`**#${qPos + 1}**`, `${file.quotes[qPos]}`);
               }
-              embed.setFooter(`Page ${page} of ${pages}  |  Total Quotes: ${file.quotes.length}`, bot.user.displayAvatarURL());
+              embed.setFooter(`Page ${page} / ${pages}  |  ${file.quotes.length} total ${file.quotes.length == 1 ? "quote" : "quotes"}`, bot.user.displayAvatarURL());
               if (file.quotes.length <= pageLength) { return message.channel.send({embed}); }
               else {
                 message.channel.send({embed}).then(msg => {
@@ -162,7 +163,7 @@ module.exports = {
                         embed.addField(`**#${qPos + 1}**`, `${file.quotes[qPos]}`);
                       }
                     }
-                    embed.setFooter(`Page ${page} of ${pages}  |  Total Quotes: ${file.quotes.length}`, bot.user.displayAvatarURL());
+                    embed.setFooter(`Page ${page} / ${pages}  |  ${file.quotes.length} total ${file.quotes.length == 1 ? "quote" : "quotes"}`, bot.user.displayAvatarURL());
                     msg.edit(embed);
                   });
 
@@ -184,7 +185,7 @@ module.exports = {
                         embed.addField(`**#${qPos + 1}**`, `${file.quotes[qPos]}`);
                       }
                     }
-                    embed.setFooter(`Page ${page} of ${pages}  |  Total Quotes: ${file.quotes.length}`, bot.user.displayAvatarURL());
+                    embed.setFooter(`Page ${page} / ${pages}  |  ${file.quotes.length} total ${file.quotes.length == 1 ? "quote" : "quotes"}`, bot.user.displayAvatarURL());
                     msg.edit(embed);
                   });
 
@@ -198,35 +199,20 @@ module.exports = {
           if (!message.member.hasPermission("MANAGE_MESSAGES")) {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to export the quotes!`);
           }
-          fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
-            if (err) {
-              console.log(err);
-              return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
-            }
-            else {
-              var file = JSON.parse(data);
-              if (file.quotes.length < 1) {
-                return message.channel.send(`**${message.author.username}**, there are no quotes to export!`);
-              }
-              else {
-                let quotePath = `./config/server/${message.guild.id}/quotes.txt`;
-                for (let m = 0; m < file.quotes.length; m++) {
-                  fs.appendFile(quotePath, `${file.quotes[m]}\n\n`, 'utf8', (err) => {
-                    if (err) console.log(err);
-                  });
-                }
-                message.channel.send(`**${message.author.username}**, here are the quotes for ${message.guild.name} in a nice text file!`, { files: [quotePath] });
-                fs.writeFileSync(quotePath, "", 'utf8');  // <-- clears out the file from the export, so it's ready for the next one
-              }
-            }
-          });
+          return message.channel.send(`**${message.author.username}**, here are the quotes for ${message.guild.name}!`,
+            {
+              files: [{
+                attachment: quoteFile,
+                name: `${message.guild.name}_quotes.json`
+              }]
+            });
           break;
 /*
       case 'import':
           if (!message.member.hasPermission("MANAGE_MESSAGES")) {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to export the quotes!`);
           }
-          fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
+          fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
               console.log(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
@@ -249,7 +235,7 @@ module.exports = {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to purge the quotes!`);
           }
 
-          fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
+          fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
               console.log(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
@@ -268,7 +254,7 @@ module.exports = {
                 })
                 .then((collected) => {
                   if (collected.first().content.toLowerCase() === 'yes' || collected.first().content.toLowerCase() === 'y') {
-                      fs.writeFile(`./config/server/${message.guild.id}/quotes.json`, JSON.stringify({quotes:[]}, null, 1), 'utf8', (err) => {
+                      fs.writeFile(quoteFile, JSON.stringify({quotes:[]}, null, 1), 'utf8', (err) => {
                         if (err) {
                           console.log(err);
                           return message.channel.send("Something went wrong while trying to purge the server's quotes!");
@@ -293,7 +279,7 @@ module.exports = {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to revert the quotes to their defaults!`);
           }
 
-          fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
+          fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
               console.log(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
@@ -309,7 +295,7 @@ module.exports = {
                 })
                 .then((collected) => {
                   if (collected.first().content.toLowerCase() === 'yes' || collected.first().content.toLowerCase() === 'y') {
-                      fs.copyFile('./config/bot/defaults/quotes.json', `./config/server/${message.guild.id}/quotes.json`, (err) => {
+                      fs.copyFile('./config/bot/defaults/quotes.json', quoteFile, (err) => {
                         if (err) {
                           console.log(err);
                           return message.channel.send("Something went wrong while trying to reset the server's quotes to their defaults!");
@@ -331,7 +317,7 @@ module.exports = {
 
       default:
           if (!args || args.length < 1) {
-            fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
+            fs.readFile(quoteFile, 'utf8', (err, data) => {
               if (err) {
                 console.log(err);
                 return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
@@ -347,7 +333,7 @@ module.exports = {
           }
           else if (!isNaN(args[0])) {
             var cleanInt = Math.trunc(args[0]);
-            fs.readFile(`./config/server/${message.guild.id}/quotes.json`, 'utf8', (err, data) => {
+            fs.readFile(quoteFile, 'utf8', (err, data) => {
               if (err) {
                 console.log(err);
                 return message.channel.send("Sorry, something went wrong while trying to read the quotes!");

@@ -3,8 +3,9 @@ This grabs information about the person who invoked the command, or about anothe
 member of the server if they are mentioned.
 */
 
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const { red_light } = require("../../config/bot/colors.json");
+const { getUserFromMention } = require("../../config/bot/util.js");
 
 module.exports = {
     config: {
@@ -25,7 +26,7 @@ module.exports = {
       		}
       }
 
-      let embed = new discord.MessageEmbed()
+      let embed = new MessageEmbed()
           .setColor(red_light)
           .setAuthor(member.user.tag, member.user.displayAvatarURL())
           .setThumbnail(member.user.displayAvatarURL())
@@ -46,15 +47,4 @@ module.exports = {
       return message.channel.send(embed);
 
     }
-}
-
-function getUserFromMention(mention, guild) {
-  // The id is the first and only match found by the RegEx.
-  const matches = mention.match(/^<@!?(\d+)>$/);
-  // If supplied variable was not a mention, matches will be null instead of an array.
-  if (!matches) return;
-  // However the first element in the matches array will be the entire mention, not just the ID,
-  // so use index 1.
-  const id = matches[1];
-  return guild.members.cache.get(id);
 }

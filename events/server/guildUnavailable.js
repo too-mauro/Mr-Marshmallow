@@ -4,7 +4,7 @@ It sends a message to the log channel saying which server went offline.
 */
 
 const fs = require("fs");
-const discord = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const { purple_dark } = require("../../config/bot/colors.json");
 const logChannel = JSON.parse(fs.readFileSync("./config/bot/settings.json", 'utf8')).channels.log;
 
@@ -14,7 +14,7 @@ module.exports = async (bot, guild) => {
   console.log(`${guild.name} (ID: ${guild.id}) is currently unavailable.`);
 
   // Try to send the "Server Unavailable" message to the log channel.
-  const embed = new discord.MessageEmbed()
+  const embed = new MessageEmbed()
       .setColor(purple_dark)
       .setTitle(`Server Unavailable`)
       .addField("Name:", `**${guild.name}**`, true)

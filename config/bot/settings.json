@@ -1,10 +1,5 @@
 {
-	"ownerID": "309411734081372162",
-	"startupMessageEnabled": true,
-	"channels": {
-		"log": "566792124100771881",
-		"ticket": "632788916969406465"
-	},
+	"owners": ["309411734081372162"],
 	"defaults": {
 		"prefix": "m!",
 		"joinMessage": "Hiya username, welcome to servername!",
@@ -16,5 +11,13 @@
 		"maxDenyListSize": 50,
 		"warnMessage": "Nice try username, but you're not allowed to say that. <:marshAngry:696122058245013555>",
 		"warnType": "channel"
+	},
+	"startup": {
+		"enabled": false,
+		"message": "Mr. Marshmallow vX is online and ready!"
+	},
+	"channels": {
+		"log": "566792124100771881",
+		"ticket": "632788916969406465"
 	}
 }
