@@ -79,19 +79,19 @@ module.exports = {
           }
           song = {
             title: songInfo.playerResponse.videoDetails.title,
-            url: query,
+            url: `https://www.youtube.com/watch?v=${songInfo.playerResponse.videoDetails.videoId}`,
             duration: secondsToTime(songInfo.playerResponse.videoDetails.lengthSeconds),
             queueDuration: parseInt(songInfo.playerResponse.videoDetails.lengthSeconds),
-            thumbnail: songInfo.playerResponse.videoDetails.thumbnail.thumbnails[3].url,
+            thumbnail: songInfo.playerResponse.videoDetails.thumbnail.thumbnails[0].url,
             requester: message.member.nickname ? `${message.member.nickname} (${message.author.tag})` : message.author.tag
           };
         }
         catch (err) {
           console.log(err);
-          return message.channel.send(`Sorry, **${message.author.username}**, I couldn't add the song to the queue! Maybe it's a private video or deleted...?`);
+          return message.channel.send(`Sorry, **${message.author.username}**, I couldn't add the song! Maybe it's a private video or deleted...?`);
         }
       }
-      else if (ytpl.validateURL(query)) {
+      else if (ytpl.validateID(query)) {
         // if this is a playlist, get every item and add to queue
         songInfo = await ytpl(query, { limit: Infinity });
         for (let p = 0; p < songInfo.items.length; p++) {
@@ -135,17 +135,20 @@ module.exports = {
           message.channel.send({embed});
         }
         else {
-          message.channel.send(`**Added to Queue**
-          ${songInfo.title}
-          "**Description:**" ${songInfo.description ? songInfo.description : "None available."}
-          **Songs:** ${songInfo.total_items}`);
+          message.channel.send(`**Added to Queue**\n${songInfo.title}\n"**Description:**" ${songInfo.description ? songInfo.description : "None available."}\n**Songs:** ${songInfo.total_items}`);
         }
 
         if (!serverQueue) {
           bot.queue.set(message.guild.id, queueConstruct);
           try {
+            if (message.guild.me.voice.channel) {
+              message.channel.send(`Now taking more requests in ${queueConstruct.textChannel}!`);
+            }
+            else {
+              message.channel.send(`Joined \`${queueConstruct.voiceChannel.name}\` and taking more requests in ${queueConstruct.textChannel}!`);
+            }
             queueConstruct.connection = await message.member.voice.channel.join();
-            return playSong(bot, queueConstruct.songs[0], message);
+            playSong(bot, queueConstruct.songs[0], message);
           }
           catch (error) {
             console.error(error);
@@ -154,6 +157,7 @@ module.exports = {
             return message.channel.send(`Could not join the channel: ${error}`).catch(console.error);
           }
         }
+        return;
 
       }
       else {
@@ -181,7 +185,7 @@ module.exports = {
         }
         catch (err) {
           console.log(err);
-          return message.channel.send(`Sorry, **${message.author.username}**, I couldn't add the song to the queue! Maybe the one I found is a private video or deleted...?`);
+          return message.channel.send(`Sorry, **${message.author.username}**, I couldn't add the song! Maybe the one I found is a private video or deleted...?`);
         }
       }
 
@@ -213,13 +217,13 @@ module.exports = {
             message.channel.send(`Now taking more requests in ${queueConstruct.textChannel}!`);
           }
           else {
-            message.channel.send(`Joined ${queueConstruct.voiceChannel} and taking more requests in ${queueConstruct.textChannel}!`);
+            message.channel.send(`Joined \`${queueConstruct.voiceChannel.name}\` and taking more requests in ${queueConstruct.textChannel}!`);
           }
           queueConstruct.connection = await message.member.voice.channel.join();
           // Set an event listener here so the bot doesn't keep adding extra ones with every song played. Then, start playing!
           queueConstruct.connection.on("disconnect", () => {
             if (serverConfig.music.channelTopicChangeEnabled) {
-              message.channel.setTopic("Nothing's playing in here right now...").catch(console.error);
+              queueConstruct.textChannel.setTopic("Nothing's playing in here right now...").catch(console.error);
             }
             bot.queue.delete(message.guild.id);
           });

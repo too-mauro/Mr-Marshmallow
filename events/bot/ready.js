@@ -10,8 +10,8 @@ const { removeEndingZeroes } = require("../../config/bot/util.js");
 module.exports = async (bot) => {
 
   // Set bot's status to online and presence to playing a game of the help command.
-//  bot.user.setStatus("online");
-//  bot.user.setActivity(`${botConfigFile.defaults.prefix}help`, { type: 'PLAYING' });
+  bot.user.setStatus("online");
+  bot.user.setActivity(`${botConfigFile.defaults.prefix}help`, { type: 'PLAYING' });
   const startupMessage = botConfigFile.startup.message.replace(/vX/g, `v${removeEndingZeroes(version)}`);
   console.log(startupMessage);
 

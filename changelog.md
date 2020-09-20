@@ -1,6 +1,17 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.9.1
+### Minor Updates
+- `ytpl` package updated to v1.0.1
+- `play` command updated:
+  - Shows text channel's name instead of mention when joining a voice channel before playing a song
+  - ytpl.validateURL() function changed to ytpl.validateID() per `ytpl` package update
+  - Fixed "<>" slice from query so links now work properly if used with the <> characters
+### Bug-fixes
+- Fixed startup message not showing in log channel
+- Fixed prefix not showing upon pinging the bot user
+
 ## v0.9
 ### Major Updates
 - Discord.js upgraded to v12.3.1

@@ -13,7 +13,7 @@
 		"warnType": "channel"
 	},
 	"startup": {
-		"enabled": false,
+		"enabled": true,
 		"message": "Mr. Marshmallow vX is online and ready!"
 	},
 	"channels": {
