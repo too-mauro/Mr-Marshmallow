@@ -1,6 +1,19 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.9.2
+### Minor Updates
+- `invite` command updated to include bot invite link!
+- Discord.js updated to v12.4.1
+- Discord.js Opus updated to v0.3.3
+- `ytdl-core` package updated to v4.0.2
+- `ytsr` package removed and replaced with `yt-search` package due to former package breaking music query search functionality
+### Bug-fixes
+- Fixed the `play` command so it properly plays audio
+  - Query search works as expected
+  - Providing song and playlist links no longer cause the player to throw errors
+- Enabled Privileged Gateway Intents to fix DoorMat-related functions and the `userinfo` command (due to Discord's new opt-in user privacy standards)
+
 ## v0.9.1
 ### Minor Updates
 - `ytpl` package updated to v1.0.1

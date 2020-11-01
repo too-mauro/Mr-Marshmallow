@@ -1,6 +1,6 @@
 {
   "name": "mr-marshmallow",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "A sweet marshmallow-based general purpose Discord bot!",
   "main": "server.js",
   "repository": {
@@ -14,16 +14,16 @@
   },
   "homepage": "https://github.com/too_mauro/mr-marshmallow#readme",
   "dependencies": {
-    "@discordjs/opus": "^0.3.2",
+    "@discordjs/opus": "^0.3.3",
     "common-tags": "^1.8.0",
-    "discord.js": "^12.3.1",
+    "discord.js": "^12.4.1",
     "dotenv": "^8.2.0",
     "ffmpeg": "0.0.4",
     "ffmpeg-static": "^4.2.7",
     "graceful-fs": "^4.2.3",
     "he": "^1.2.0",
-    "ytdl-core": "^3.2.2",
-    "ytpl": "^1.0.1",
-    "ytsr": "^0.1.21"
+    "yt-search": "^2.3.3",
+    "ytdl-core": "^4.0.2",
+    "ytpl": "^1.0.1"
   }
 }

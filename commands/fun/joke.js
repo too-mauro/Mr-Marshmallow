@@ -1,6 +1,4 @@
-/*
-This command responds with a random joke.
-*/
+// This command responds with a random joke.
 
 const fetch = require("node-fetch");
 
@@ -13,7 +11,6 @@ module.exports = {
       aliases: ["j", "pun"]
   },
   run: async (bot, message, args) => {
-
     try {
       const response = await fetch("https://official-joke-api.appspot.com/jokes/random");
       const json = await response.json();
@@ -23,9 +20,9 @@ module.exports = {
         }, 2000);
       });
     }
-    catch (e) {
-      console.log(e);
-      return message.channel.send("I can't really think of something funny right now. Try again later!");
+    catch (err) {
+      console.log(err);
+      return message.channel.send("I can't think of something funny right now. Try again later!");
     }
 
   }

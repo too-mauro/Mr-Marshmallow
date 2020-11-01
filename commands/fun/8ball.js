@@ -14,13 +14,10 @@ module.exports = {
       aliases: ["8", "ball"]
   },
   run: async (bot, message, args) => {
-
       if (!args || args.length < 2) {
         return message.channel.send(`**${message.author.username}**, please ask the 8-ball a full question!`);
       }
-
       let question = args.join(" ");
-
       message.channel.send(`<:marshThink:696133701142315068>  "${question}"\n:8ball:  *(shake) (shake) (shake)*`).then(msg => {
         fs.readFile("./config/bot/8ball.json", 'utf8', (err, data) => {
           if (err) {
@@ -29,7 +26,6 @@ module.exports = {
           }
           let responses = JSON.parse(data).responses;
           let answer = responses[(Math.floor(Math.random() * (Math.floor(responses.length) - Math.ceil(1) + 1) ) + Math.ceil(1)) - 1];
-
           setTimeout(function () {
             msg.edit(`<:marshThink:696133701142315068>  "${question}"\n:8ball:  **${answer}**`);
           }, 1000);

@@ -18,7 +18,6 @@ module.exports = {
       category: "fun"
   },
   run: async (bot, message, args) => {
-
     const maxQuotes = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`)).maxQuotes;
     const quoteFile = `./config/server/${message.guild.id}/quotes.json`;
 

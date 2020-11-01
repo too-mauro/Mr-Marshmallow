@@ -4,7 +4,7 @@ the requested music. */
 
 const fs = require("fs");
 const ytdl = require("ytdl-core");
-const ytsr = require("ytsr");
+const yts = require("yt-search");
 const ytpl = require("ytpl");
 const { playSong, secondsToTime } = require("../../config/bot/util.js");
 const { MessageEmbed } = require("discord.js");
@@ -65,7 +65,7 @@ module.exports = {
         return message.channel.send(`Sorry **${message.author.username}**, I'm bound to ${serverQueue.textChannel} right now and can only add songs there!`);
       }
 
-      // Remove the < > characters if they are in the query. This ensures the playlist feature works as intended.
+      // Remove the < > characters if they are at the start and end of the query to suppress the auto-generated embed. This ensures the playlist feature works as intended.
       if (query.charAt(0) == "<" && query.charAt(query.length - 1) == ">") {
         query = query.slice(1, query.length - 1);
       }
@@ -163,23 +163,21 @@ module.exports = {
       else {
         // Find the first video from the search query.
         try {
-          let result = await ytsr(query);
-          const url = result.items[0].link;
-          if (!url) {
+          let search = await yts(query);
+          const result = search.all[0];
+          if (!result.url) {
             return message.channel.send(`**${message.author.username}**, I couldn't find a song with that search term! Please try again.`);
           }
 
-          songInfo = await ytdl.getInfo(url);
-          //return console.log(songInfo);
-          if (longVideo(songInfo.playerResponse.videoDetails.lengthSeconds)) {
-            return message.channel.send(`Sorry, I couldn't add ${songInfo.playerResponse.videoDetails.title} because it's longer than 3 hours.`);
+          if (longVideo(result.duration.seconds)) {
+            return message.channel.send(`Sorry, I couldn't add ${result.title} because it's longer than 3 hours.`);
           }
           song = {
-            title: songInfo.playerResponse.videoDetails.title,
-            url: `https://www.youtube.com/watch?v=${songInfo.playerResponse.videoDetails.videoId}`,
-            duration: secondsToTime(songInfo.playerResponse.videoDetails.lengthSeconds),
-            queueDuration: parseInt(songInfo.playerResponse.videoDetails.lengthSeconds),
-            thumbnail: songInfo.playerResponse.videoDetails.thumbnail.thumbnails[3].url,
+            title: result.title,
+            url: result.url,
+            duration: result.duration.timestamp,
+            queueDuration: parseInt(result.duration.seconds),
+            thumbnail: result.thumbnail,
             requester: message.member.nickname ? `${message.member.nickname} (${message.author.tag})` : message.author.tag
           };
         }

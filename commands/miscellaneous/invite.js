@@ -19,7 +19,7 @@ module.exports = {
           .setTitle(`${bot.user.username} Invites`)
           .setThumbnail(bot.user.displayAvatarURL())
           .addField("**Support Server**", "[Hang out in the Rockin' Treehouse!](https://discord.com/invite/UA6tK26)")
-          .addField("**Bot Invite Link**", "Coming Soon! <:marshWink:696118146188181525>")
+          .addField("**Bot Invite Link**", "[Invite me to your server!](https://discord.com/oauth2/authorize?&client_id=493208779567923213&scope=bot&permissions=3271766)")
           .addField("**GitHub Repository**", "[Check out the source code!](https://github.com/too-mauro/Mr-Marshmallow)")
           .setFooter(bot.user.username, bot.user.displayAvatarURL());
 

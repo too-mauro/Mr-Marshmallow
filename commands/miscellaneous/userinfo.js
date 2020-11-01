@@ -20,10 +20,10 @@ module.exports = {
       let member;
       if (!args || args.length < 1) { member = message.member; }
       else {
-      		member = getUserFromMention(args[0], message.guild);
-      		if (!member) {
-      			return message.channel.send(`**${message.author.username}**, please use a proper mention if you want to see someone else's information.`);
-      		}
+          member = getUserFromMention(args[0], message.guild);
+          if (!member) {
+            return message.channel.send(`**${message.author.username}**, please use a proper mention if you want to see someone else's information.`);
+          }
       }
 
       let embed = new MessageEmbed()
@@ -36,7 +36,7 @@ module.exports = {
       embed.addField("**Status:**", (member.presence.status == "dnd") ? "do not disturb" : member.presence.status, true)
       .addField("**Joined Discord On:**", member.user.createdAt, false)
       .addField(`**Joined ${message.guild.name} On:**`, member.joinedAt, false);
-      if (member.premiumSince) embed.addField(`**Boosting ${message.guild.name} Since:**`, member.premiumSince, false);
+      if (member.premiumSince) embed.addField(`**Boosting the Server Since:**`, member.premiumSince, false);
 
       // List out the user's roles, if any, from highest to lowest rank
       const roles = member.roles.cache.filter(r => r.id !== message.guild.id);
