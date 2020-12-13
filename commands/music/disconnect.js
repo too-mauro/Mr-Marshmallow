@@ -35,6 +35,7 @@ module.exports = {
         if (serverQueue.textChannel !== message.channel) {
           return message.channel.send(`Sorry **${message.author.username}**, I'm bound to ${serverQueue.textChannel} right now!`);
         }
+        serverQueue.connection.dispatcher.destroy();
         serverQueue.voiceChannel.leave();
         bot.queue.delete(message.guild.id);
         return message.channel.send(`Successfully disconnected from \`${serverQueue.voiceChannel.name}\`!`);

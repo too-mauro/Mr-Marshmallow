@@ -27,13 +27,18 @@ module.exports = {
       }
       else if (serverQueue.textChannel !== message.channel) {
         return message.channel.send(`Sorry **${message.author.username}**, I'm bound to ${serverQueue.textChannel} right now!`);
-      }      
+      }
 
-      if (serverQueue.loop) {
+      if (serverQueue.queueLoop) {
         /* if loop is on, push the song back at the end of the queue
         so it can repeat endlessly */
         let lastSong = serverQueue.songs.shift();
         serverQueue.songs.push(lastSong);
+        message.channel.send(":track_next: Skipped!");
+        return playSong(bot, serverQueue.songs[0], message);
+      }
+      else if (serverQueue.songLoop) {
+        // don't modify the queue and just repeat the first song
         message.channel.send(":track_next: Skipped!");
         return playSong(bot, serverQueue.songs[0], message);
       }

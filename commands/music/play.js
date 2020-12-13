@@ -74,15 +74,16 @@ module.exports = {
         // If the user enters a valid URL, add it to queue.
         try {
           songInfo = await ytdl.getInfo(query);
-          if (longVideo(songInfo.playerResponse.videoDetails.lengthSeconds)) {
+          let details = songInfo.player_response.videoDetails;
+          if (!details.isLive && longVideo(details.lengthSeconds)) {
             return message.channel.send(`Sorry, I couldn't add ${songInfo.playerResponse.videoDetails.title} because it's longer than 3 hours.`);
           }
           song = {
-            title: songInfo.playerResponse.videoDetails.title,
-            url: `https://www.youtube.com/watch?v=${songInfo.playerResponse.videoDetails.videoId}`,
-            duration: secondsToTime(songInfo.playerResponse.videoDetails.lengthSeconds),
-            queueDuration: parseInt(songInfo.playerResponse.videoDetails.lengthSeconds),
-            thumbnail: songInfo.playerResponse.videoDetails.thumbnail.thumbnails[0].url,
+            title: details.title,
+            url: `https://www.youtube.com/watch?v=${details.videoId}`,
+            duration: details.isLive ? "LIVE" : secondsToTime(details.lengthSeconds),
+            queueDuration: details.isLive ? 0 : parseInt(details.lengthSeconds),
+            thumbnail: details.thumbnail.thumbnails[0].url,
             requester: message.member.nickname ? `${message.member.nickname} (${message.author.tag})` : message.author.tag
           };
         }
@@ -94,8 +95,10 @@ module.exports = {
       else if (ytpl.validateID(query)) {
         // if this is a playlist, get every item and add to queue
         songInfo = await ytpl(query, { limit: Infinity });
+        fs.writeFileSync("./config/bot/eval.txt", JSON.stringify(songInfo, null, 1), "utf8");
         for (let p = 0; p < songInfo.items.length; p++) {
-          if (longVideo(songInfo.items[p].duration)) {
+          // live videos return a null duration
+          if (!songInfo.items[p].isLive && longVideo(songInfo.items[p].duration)) {
             message.channel.send(`Sorry, I couldn't add ${songInfo.items[p].title} because it's longer than 3 hours.`);
             continue;
           }
@@ -103,9 +106,9 @@ module.exports = {
             song = {
               title: songInfo.items[p].title,
               url: songInfo.items[p].url,
-              duration: songInfo.items[p].duration,
-              queueDuration: timeToSeconds(songInfo.items[p].duration),
-              thumbnail: songInfo.items[p].thumbnail,
+              duration: songInfo.items[p].duration ? songInfo.items[p].duration : "LIVE",
+              queueDuration: songInfo.items[p].duration ? timeToSeconds(songInfo.items[p].duration) : 0,
+              thumbnail: songInfo.items[p].bestThumbnail.url,
               requester: message.member.nickname ? `${message.member.nickname} (${message.author.tag})` : message.author.tag
             };
 
@@ -130,12 +133,12 @@ module.exports = {
             .setTitle("Added to Queue")
             .setDescription(`[${songInfo.title}](${songInfo.url})`)
             .addField("Description", songInfo.description ? songInfo.description : "None available.", false)
-            .addField("Songs", songInfo.total_items, true)
+            .addField("Songs", songInfo.estimated_items, true)
             .setThumbnail(song.thumbnail);
           message.channel.send({embed});
         }
         else {
-          message.channel.send(`**Added to Queue**\n${songInfo.title}\n"**Description:**" ${songInfo.description ? songInfo.description : "None available."}\n**Songs:** ${songInfo.total_items}`);
+          message.channel.send(`**Added to Queue**\n${songInfo.title}\n"**Description:**" ${songInfo.description ? songInfo.description : "None available."}\n**Songs:** ${songInfo.estimated_items}`);
         }
 
         if (!serverQueue) {
@@ -168,15 +171,15 @@ module.exports = {
           if (!result.url) {
             return message.channel.send(`**${message.author.username}**, I couldn't find a song with that search term! Please try again.`);
           }
-
-          if (longVideo(result.duration.seconds)) {
+          else if (result.duration && longVideo(result.duration.seconds)) {
+            // again, live videos return a null duration (same as playlist)
             return message.channel.send(`Sorry, I couldn't add ${result.title} because it's longer than 3 hours.`);
           }
           song = {
             title: result.title,
             url: result.url,
-            duration: result.duration.timestamp,
-            queueDuration: parseInt(result.duration.seconds),
+            duration: result.duration ? result.duration.timestamp : "LIVE",
+            queueDuration: result.duration ? parseInt(result.duration.seconds) : 0,
             thumbnail: result.thumbnail,
             requester: message.member.nickname ? `${message.member.nickname} (${message.author.tag})` : message.author.tag
           };
@@ -253,7 +256,7 @@ function timeToSeconds(videoDuration) {
 }
 
 function longVideo(videoLength) {
-  // Check if the video in question is longer than 3 hours. If it is, return true. Return false otherwise.
+  // Check if the video in question is longer than 3 hours.
   if (isNaN(videoLength)) {
     let totalTime = videoLength.split(":").reverse();
     return (totalTime[2] && totalTime[2] > 3);

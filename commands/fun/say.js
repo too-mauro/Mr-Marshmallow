@@ -23,9 +23,6 @@ module.exports = {
       return message.channel.send(`**${message.author.username}**, you need to give me a message to say!`);
     }
 
-    // get everything after the message, join it as one combined string, then reverse it
-    let text = args.join(" ");
-
     // check if bot has "manage messages" permissions
     if (message.guild.me.permissionsIn(message.channel).has("MANAGE_MESSAGES")) { message.delete(); }
 
@@ -47,6 +44,8 @@ module.exports = {
       }
     }
 
+    // get everything after the message, join it as one combined string
+    let text = args.join(" ");
     return message.channel.send(text);
   }
 }

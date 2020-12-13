@@ -13,7 +13,11 @@ module.exports = (bot) => {
         for (let file of commands) {
             let pull = require(`../commands/${dirs}/${file}`);
             bot.commands.set(pull.config.name, pull);
-            if (pull.config.aliases) pull.config.aliases.forEach(a => bot.aliases.set(a, pull.config.name));
+            if (pull.config.aliases) {
+              pull.config.aliases.forEach(a => {
+                bot.aliases.set(a, pull.config.name);
+              });
+            }
             delete require.cache[require.resolve(`../commands/${dirs}/${file}`)];
         }
     });

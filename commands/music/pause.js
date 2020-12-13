@@ -3,16 +3,19 @@
 module.exports = {
     config: {
         name: "pause",
-        aliases: ["stop"],
+        aliases: ["stop", "resume"],
         usage: "",
         category: "music",
-        description: "Pauses a currently playing song."
+        description: "Pauses or resumes a currently playing or paused song."
     },
     run: async (bot, message, args) => {
 
       const serverQueue = bot.queue.get(message.guild.id);
       if (!serverQueue) {
         return message.channel.send(`**${message.author.username}**, there's nothing playing right now!`);
+      }
+      else if (serverQueue.textChannel !== message.channel) {
+        return message.channel.send(`Sorry **${message.author.username}**, I'm bound to ${serverQueue.textChannel} right now!`);
       }
 
       if (serverQueue.playing) {
@@ -21,7 +24,9 @@ module.exports = {
         return message.channel.send(":pause_button:  Paused!");
       }
       else {
-        return message.channel.send(`**${message.author.username}**, the music's already paused!`);
+        serverQueue.playing = true;
+        serverQueue.connection.dispatcher.resume();
+        return message.channel.send(":arrow_forward:  Resumed!");
       }
     }
 }

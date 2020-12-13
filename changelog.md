@@ -1,6 +1,20 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.9.3
+### Major Updates
+- `resume` command removed, functionality merged into `pause` command
+### Minor Updates
+- Music commands can now handle live videos properly
+  - Live videos show up as "LIVE" in now playing messages and queue
+- Discord.js updated to v12.5.1
+- `yt-search` package updated to v2.5.1
+- `ytdl-core` package updated to v4.1.4
+- `ytpl` package updated to 2.0.0-alpha.3
+### Bug-fixes
+- Fixed the `remove` command so removing the first queue entry doesn't remove the currently playing song
+- Fixed a bug where playlists wouldn't work properly, bug caused from YouTube API change
+
 ## v0.9.2
 ### Minor Updates
 - `invite` command updated to include bot invite link!

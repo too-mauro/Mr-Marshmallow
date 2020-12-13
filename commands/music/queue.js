@@ -44,7 +44,7 @@ module.exports = {
           embed.addField('\u200b', `${sPos}. [${serverQueue.songs[sPos].title}](${serverQueue.songs[sPos].url})\n**Length:** ${serverQueue.songs[sPos].duration}  |  **Requested by:** ${serverQueue.songs[sPos].requester}`);
         }
       }
-      embed.setFooter(`Page ${page} / ${pages}  |  ${serverQueue.songs.length} total ${serverQueue.songs.length - 1 == 1 ? "song" : "songs"}  |  ${secondsToTime(serverQueue.totalLength)} total length`, bot.user.displayAvatarURL());
+      embed.setFooter(`Page ${page} / ${pages}  |  ${serverQueue.songs.length} total ${serverQueue.songs.length == 1 ? "song" : "songs"}  |  ${secondsToTime(serverQueue.totalLength)} total length`, bot.user.displayAvatarURL());
       if (serverQueue.songs.length <= pageLength) { return message.channel.send({embed}); }
       else {
         message.channel.send({embed}).then(msg => {
@@ -91,7 +91,7 @@ module.exports = {
                 embed.addField('\u200b', `${sPos}. [${serverQueue.songs[sPos].title}](${serverQueue.songs[sPos].url})\n**Length:** ${serverQueue.songs[sPos].duration}  |  **Requested by:** ${serverQueue.songs[sPos].requester}`);
               }
             }
-            embed.setFooter(`Page ${page} / ${pages}  |  ${serverQueue.songs.length} total ${serverQueue.songs.length - 1 == 1 ? "song" : "songs"}  |  ${secondsToTime(serverQueue.totalLength)} total length`, bot.user.displayAvatarURL());
+            embed.setFooter(`Page ${page} / ${pages}  |  ${serverQueue.songs.length} total ${serverQueue.songs.length == 1 ? "song" : "songs"}  |  ${secondsToTime(serverQueue.totalLength)} total length`, bot.user.displayAvatarURL());
             msg.edit(embed);
           });
 
@@ -122,7 +122,7 @@ module.exports = {
                 embed.addField('\u200b', `${sPos}. [${serverQueue.songs[sPos].title}](${serverQueue.songs[sPos].url})\n**Length:** ${serverQueue.songs[sPos].duration}  |  **Requested by:** ${serverQueue.songs[sPos].requester}`);
               }
             }
-            embed.setFooter(`Page ${page} / ${pages}  |  ${serverQueue.songs.length} total ${serverQueue.songs.length - 1 == 1 ? "song" : "songs"}  |  ${secondsToTime(serverQueue.totalLength)} total length`, bot.user.displayAvatarURL());
+            embed.setFooter(`Page ${page} / ${pages}  |  ${serverQueue.songs.length} total ${serverQueue.songs.length == 1 ? "song" : "songs"}  |  ${secondsToTime(serverQueue.totalLength)} total length`, bot.user.displayAvatarURL());
             msg.edit(embed);
           });
 

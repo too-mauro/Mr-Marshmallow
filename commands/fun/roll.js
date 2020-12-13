@@ -50,26 +50,36 @@ function dRoll(numFaces, modifier) {
   // if there's no modifier, return the roll's value
   // otherwise, remove the extra space from the modifier if any
   let rollValue = rollDie(numFaces);
-  if (!modifier) return [rollValue, "no"];
-  var modValue = modifier.split().join("").slice(1);
+  if (!modifier) {
+    return [rollValue, "no"];
+  }
+  let modValue = modifier.split().join("").slice(1);
 
   /* check if the first character is either a '+' or '-', and if the stuff after that is a number.
   otherwise, treat it as an invalid modifier and return just the roll's value.
   if the value is a number and the result exceeds the number of faces or goes below 1, return the maximum or minimum value */
-  if (isNaN(modifier) || isNaN(modValue)) return [rollValue, "invalid"];
+  if (isNaN(modifier) || isNaN(modValue)) {
+    return [rollValue, "invalid"];
+  }
   modValue = Math.trunc(modValue);
   switch (modifier.charAt(0)) {
     case '+':
-      if (parseInt(rollValue) + parseInt(modValue) > numFaces) return [numFaces, modifier];
-      else return [parseInt(rollValue) + parseInt(modValue), modifier];
+      if (parseInt(rollValue) + parseInt(modValue) > numFaces) {
+        return [numFaces, modifier];
+      }
+      return [parseInt(rollValue) + parseInt(modValue), modifier];
 
     case '-':
-      if (parseInt(rollValue) - parseInt(modValue) < 1) return [1, modifier];
-      else return [parseInt(rollValue) - parseInt(modValue), modifier];
+      if (parseInt(rollValue) - parseInt(modValue) < 1) {
+        return [1, modifier];
+      }
+      return [parseInt(rollValue) - parseInt(modValue), modifier];
 
     default:
       modifier = Math.trunc(modifier);
-      if (parseInt(rollValue) + parseInt(modValue) > numFaces) return [numFaces, modifier];
-      else return [parseInt(rollValue) + parseInt(modValue), `+${modifier}`];
+      if (parseInt(rollValue) + parseInt(modValue) > numFaces) {
+        return [numFaces, modifier];
+      }
+      return [parseInt(rollValue) + parseInt(modValue), `+${modifier}`];
   }
 }

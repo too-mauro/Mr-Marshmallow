@@ -28,12 +28,15 @@ module.exports = {
       if (serverQueue.songs.length < 1) {
         return message.channel.send(`**${message.author.username}**, there are no songs in the queue!`);
       }
-      else if (cleanInt > serverQueue.songs.length || cleanInt <= 0) {
+      else if (cleanInt > serverQueue.songs.length || cleanInt < 0) {
         return message.channel.send(`**${message.author.username}**, there's no song at that position!`);
       }
+      else if (cleanInt == 0) {
+        return message.channel.send(`**${message.author.username}**, you can use the \`skip\` command to remove the currently playing song from queue!`);
+      }
 
-      const deletedSongTitle = serverQueue.songs[cleanInt - 1].title;
-      serverQueue.songs.splice((cleanInt - 1), 1);
+      const deletedSongTitle = serverQueue.songs[cleanInt].title;
+      serverQueue.songs.splice(cleanInt, 1);
       bot.queue.set(message.guild.id, serverQueue);
       return message.channel.send(`The song **${deletedSongTitle}** has been deleted!`);
 

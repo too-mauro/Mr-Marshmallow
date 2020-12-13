@@ -53,10 +53,17 @@ module.exports = {
         bot.queue.delete(message.guild.id);
       }, 500);
     }
-    // subtract the length here, since the currently playing song doesn't appear in the queue
-    queue.totalLength -= queue.songs[0].queueDuration;
+
     let stream = null;
-    try { stream = ytdl(queue.songs[0].url, { filter: 'audioonly', highWaterMark: 1 << 25, volume: false }); }
+    let options = null;
+    try {
+      if (queue.songs[0].queueDuration > 0) {
+        // non-live songs have more than 0 seconds
+        options = { filter: 'audio', highWaterMark: 1 << 25, volume: false };
+      }
+      else { options = { filter: 'audio', highWaterMark: 1 << 25, volume: false, quality: '95' }; }
+      stream = ytdl(queue.songs[0].url, options);
+    }
     catch (err) {
       if (queue) {
         queue.songs.shift();
@@ -70,8 +77,6 @@ module.exports = {
       const dispatcher = queue.connection.play(stream)
         .on("finish", () => {
           if (queue.songLoop) {
-            let firstSong = queue.songs.shift();
-            queue.songs.splice(0, 0, firstSong);
             module.exports.playSong(bot, queue.songs[0], message);
           }
           else if (queue.queueLoop) {

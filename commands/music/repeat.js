@@ -42,7 +42,7 @@ module.exports = {
         }
         else {
           const prefix = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8")).prefix;
-          return message.channel.send(`**__${message.guild.name} Loop Status__**\nSong Loop: ${serverQueue.songLoop ? "**on**" : "**off**"}   ||   Queue Loop: ${serverQueue.queueLoop ? "**on**" : "**off**"}\n(Do \`${prefix}loop <song>\` to toggle song loop or \`${prefix}loop <queue/all>\` to toggle queue loop.)`);
+          return message.channel.send(`**__${message.guild.name} Loop Status__**\nSong Loop: ${serverQueue.songLoop ? "**on**" : "**off**"}   ||   Queue Loop: ${serverQueue.queueLoop ? "**on**" : "**off**"}\n(Do \`${prefix}repeat <song>\` to toggle song loop or \`${prefix}repeat <queue/all>\` to toggle queue loop.)`);
         }
       }
       else {
