@@ -9,7 +9,7 @@
 		"pinThreshold": 5,
 		"maxQuotes": 300,
 		"maxDenyListSize": 50,
-		"warnMessage": "Nice try username, but you're not allowed to say that. <:marshAngry:696122058245013555>",
+		"warnMessage": "Nice try username, but you're not allowed to say that. <:marshMad:696122820907761705>",
 		"warnType": "channel"
 	},
 	"startup": {

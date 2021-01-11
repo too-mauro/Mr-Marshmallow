@@ -30,9 +30,14 @@ module.exports = {
             try {
               message.channel.send(`OK. ${bot.user.username} shutting down...`);
               console.log(`${bot.user.username} shutting down...`);
-              setTimeout(function () { process.exit(); }, 1000); // The timeout is to allow the bot to send the message before stopping the process.
+              setTimeout(() => {
+                process.exit();
+              }, 1000);
+              // The timeout is to allow the bot to send the message before stopping the process.
             }
-            catch(e) { return message.channel.send(`Whoops, something went wrong! Here's the error: ${e.message}`); }
+            catch (err) {
+              console.error(err);
+              return message.channel.send(`Whoops, something went wrong! Here's the error: ${err.message}`); }
           }
           else if (res == 'no' || res == 'n') {
             return message.channel.send("The operation's been cancelled.");

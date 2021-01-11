@@ -43,7 +43,7 @@ module.exports = {
 }
 
 function rollDie(numFaces) {
-  return Math.floor(Math.random() * (Math.floor(numFaces) - Math.ceil(1) + 1) ) + Math.ceil(1);
+  return Math.floor(Math.random() * (Math.floor(numFaces) - Math.ceil(1) + 1)) + Math.ceil(1);
 }
 
 function dRoll(numFaces, modifier) {

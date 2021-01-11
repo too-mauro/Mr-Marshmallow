@@ -165,10 +165,9 @@ module.exports = {
       }
 
       async function startRound(roundNum, roster, rFilter) {
-        const response = await fetch(triviaAPI);
-        let json = await response.json();
-        let difficulty = json.results[0].difficulty;
-        let question = he.decode(json.results[0].question);
+        const response = await fetch(triviaAPI).then(res => res.json());
+        let difficulty = response.results[0].difficulty;
+        let question = he.decode(response.results[0].question);
         let points = 0;
         let tally = '';
         switch(difficulty) {
@@ -178,8 +177,8 @@ module.exports = {
           default: break;
         }
 
-        json.results[0].incorrect_answers.push(json.results[0].correct_answer);
-        let answers = json.results[0].incorrect_answers;
+        response.results[0].incorrect_answers.push(response.results[0].correct_answer);
+        let answers = response.results[0].incorrect_answers;
         for (let i = answers.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * i);
           const temp = answers[i];
@@ -196,7 +195,7 @@ module.exports = {
         let wrongAnswerUsers = [];
         let prematureEnd = false;
 
-        message.channel.send(`**Round ${roundNum + 1}** (${difficulty}, ${points * 10} seconds to answer)\nType one of the choices or the corresponding number.\n\`\`\`${he.decode(json.results[0].question)}\`\`\`\n${he.decode(choices)}`);
+        message.channel.send(`**Round ${roundNum + 1}** (${difficulty}, ${points * 10} seconds to answer)\nType one of the choices or the corresponding number.\n\`\`\`${he.decode(response.results[0].question)}\`\`\`\n${he.decode(choices)}`);
 
         const collector = message.channel.createMessageCollector(m => rFilter.includes(m.author), { time: points * 10000 });
         let correctlyAnswered = false;
@@ -209,7 +208,7 @@ module.exports = {
           else if (wrongAnswerUsers.includes(m.author)) {
             return m.channel.send(`Sorry, **${m.author.username}**, you already answered!`);
           }
-          else if ((parseInt(m.content) && answers[m.content - 1] == json.results[0].correct_answer) || (m.content.toLowerCase() == he.decode(json.results[0].correct_answer.toLowerCase()))) {
+          else if ((parseInt(m.content) && answers[m.content - 1] == response.results[0].correct_answer) || (m.content.toLowerCase() == he.decode(response.results[0].correct_answer.toLowerCase()))) {
             correctlyAnswered = true;
             collector.stop();
           }
@@ -236,7 +235,7 @@ module.exports = {
               tally = '';
             }
             else {
-              message.channel.send(`Looks like nobody got it! The correct answer was:  \` ${he.decode(json.results[0].correct_answer)} \`\nMoving on...`);
+              message.channel.send(`Looks like nobody got it! The correct answer was:  \` ${he.decode(response.results[0].correct_answer)} \`\nMoving on...`);
             }
             roundNum++;
             if (roundNum < maxRounds) {

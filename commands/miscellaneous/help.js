@@ -33,14 +33,15 @@ module.exports = {
           embed.setDescription(`Use the command format \`${prefix}help <command>\` to view more info about a command.`);
           const categories = readdirSync("./commands/");
           categories.forEach(category => {
-              if (category == 'owner') return;    // <-- don't show owner commands
-              const capitalize = category.slice(0, 1).toUpperCase() + category.slice(1);
-              const dir = bot.commands.filter(c => c.config.category === category);
-              if (dir.size > 0) {
-                  embed.addField(`${capitalize} (${dir.size}):`, dir.map(c => `\`${c.config.name}\``).sort().join(" "));
-                  commandCount += dir.size;
-              }
-              else { embed.addField(`${capitalize} (${dir.size}):`, "**No commands in this category!**"); }
+            // don't show owner commands; return just restarts the loop, continue won't work
+            if (category == 'owner') return;
+            const capitalize = category.slice(0, 1).toUpperCase() + category.slice(1);
+            const dir = bot.commands.filter(c => c.config.category === category);
+            if (dir.size > 0) {
+                embed.addField(`${capitalize} (${dir.size}):`, dir.map(c => `\`${c.config.name}\``).sort().join(" "));
+                commandCount += dir.size;
+            }
+            else { embed.addField(`${capitalize} (${dir.size}):`, "**No commands in this category!**"); }
           });
           embed.setFooter(`${bot.user.username} | Total Commands: ${commandCount}`, bot.user.displayAvatarURL());
           return message.channel.send({embed});

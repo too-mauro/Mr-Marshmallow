@@ -12,16 +12,15 @@ module.exports = {
   },
   run: async (bot, message, args) => {
     try {
-      const response = await fetch("https://official-joke-api.appspot.com/jokes/random");
-      const json = await response.json();
-      message.channel.send(json.setup).then(msg => {
-        setTimeout(function () {
-          msg.edit(`${json.setup}\n${json.punchline}`);
+      const joke = await fetch("https://official-joke-api.appspot.com/jokes/random").then(res => res.json());
+      message.channel.send(joke.setup).then(msg => {
+        setTimeout(() => {
+          msg.edit(`${joke.setup}\n${joke.punchline}`);
         }, 2000);
       });
     }
     catch (err) {
-      console.log(err);
+      console.error(err);
       return message.channel.send("I can't think of something funny right now. Try again later!");
     }
 

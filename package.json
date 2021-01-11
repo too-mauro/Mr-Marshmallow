@@ -1,6 +1,6 @@
 {
   "name": "mr-marshmallow",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "A sweet marshmallow-based general purpose Discord bot!",
   "main": "server.js",
   "repository": {
@@ -23,7 +23,7 @@
     "graceful-fs": "^4.2.3",
     "he": "^1.2.0",
     "yt-search": "^2.5.1",
-    "ytdl-core": "^4.1.4",
-    "ytpl": "^2.0.0-alpha.3"
+    "ytdl-core": "^4.4.2",
+    "ytpl": "^2.0.4"
   }
 }

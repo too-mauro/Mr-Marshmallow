@@ -24,9 +24,9 @@
 - Dab on someone!
 
 ## Installation & Setup
-Mr. Marshmallow runs on top of Node.js. Please refer to the [Node.js website](https://nodejs.org/en/) for installation.
+Mr. Marshmallow runs on top of Node.js v14 or higher. Please refer to the [Node.js website](https://nodejs.org/en/) for installation.
 
-Once Node.js is installed, go to the bot's main directory and type `npm install` in a terminal window; it should install all of the necessary packages for you. Once that's done, type `node server.js`, which will run Mr. Marshmallow!
+Once Node.js is installed, clone or download this repository. Open a terminal/command prompt window, go to the directory where you downloaded the repository, and type `node server.js`, which will run Mr. Marshmallow!
 
 PM2, a Node.js process manager, is recommended to keep Mr. Marshmallow up and running. In the case of an unexpected shutdown, Mr. Marshmallow will be able to get right back up when your system starts! Please refer to [this guide](https://discordjs.guide/improving-dev-environment/pm2.html#installation) on how to set up PM2.
 

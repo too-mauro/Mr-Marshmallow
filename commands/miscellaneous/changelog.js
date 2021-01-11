@@ -15,6 +15,6 @@ module.exports = {
   },
   run: async (bot, message, args) => {
 
-    return message.channel.send(`Current version: **v${removeEndingZeroes(version)}**\nCheck out the change log here:\n<https://github.com/too-mauro/Mr-Marshmallow/blob/master/changelog.md>`);
+    return message.channel.send(`Current version: **v${removeEndingZeroes(version)}**\nCheck out the change log here:   <https://git.io/JT7Sh>`);
   }
 }

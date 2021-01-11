@@ -6,6 +6,7 @@ quotes, or reset them to the defaults.
 */
 
 const fs = require("fs");
+const fetch = require("node-fetch");
 const { MessageEmbed } = require("discord.js");
 const { purple_medium } = require("../../config/bot/colors.json");
 
@@ -18,8 +19,10 @@ module.exports = {
       category: "fun"
   },
   run: async (bot, message, args) => {
-    const maxQuotes = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`)).maxQuotes;
+    const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`));
+    const maxQuotes = serverConfig.maxQuotes;
     const quoteFile = `./config/server/${message.guild.id}/quotes.json`;
+    const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
 
     if (args[0] && isNaN(args[0])) { args[0] = args[0].toLowerCase(); }
     switch (args[0]) {
@@ -35,18 +38,18 @@ module.exports = {
           }
           fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
-              console.log(err);
+              console.error(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
             }
             else {
-              var file = JSON.parse(data);
+              let file = JSON.parse(data);
               if (file.quotes.length >= maxQuotes) {
                 return message.channel.send(`Sorry **${message.author.username}**, I can only store up to ${maxQuotes} quotes. If you want to add another one, please delete an existing one.`);
               }
               file.quotes.push(newQuote);
               fs.writeFile(quoteFile, JSON.stringify(file, null, 1), 'utf8', (err) => {
                 if (err) {
-                  console.log(err);
+                  console.error(err);
                   return message.channel.send(`Sorry **${message.author.username}**, I couldn't store your quote!`);
                 }
                 else {
@@ -58,7 +61,7 @@ module.exports = {
           break;
 
       case 'delete':
-          var pos = args.slice(1).join("");
+          let pos = args.slice(1).join("");
           if (!message.member.hasPermission("MANAGE_MESSAGES")) {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to delete a quote!`);
           }
@@ -67,12 +70,12 @@ module.exports = {
           }
           fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
-              console.log(err);
+              console.error(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
             }
             else {
-              var cleanInt = Math.trunc(pos);
-              var file = JSON.parse(data);
+              let cleanInt = Math.trunc(pos);
+              let file = JSON.parse(data);
               if (file.quotes.length < 1) {
                 return message.channel.send(`**${message.author.username}**, there are no quotes to delete!`);
               }
@@ -82,7 +85,7 @@ module.exports = {
               file.quotes.splice((cleanInt - 1), 1);
               fs.writeFile(quoteFile, JSON.stringify(file, null, 1), 'utf8', (err) => {
                 if (err) {
-                  console.log(err);
+                  console.error(err);
                   return message.channel.send(`Sorry **${message.author.username}**, I couldn't delete your quote!`);
                 }
                 else {
@@ -100,13 +103,13 @@ module.exports = {
 
           fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
-              console.log(err);
+              console.error(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
             }
             else {
               let pageLength = 6;  // <-- How many quotes will show on one page. Can be set up to 10 to anticipate large quotes and to respect embed character limit.
               if (args[1] && !isNaN(args[1]) && 0 < Math.trunc(args[1]) && Math.trunc(args[1]) <= 10) { pageLength = Math.trunc(args[1]); }
-              var file = JSON.parse(data);
+              let file = JSON.parse(data);
               if (file.quotes.length < 1) {
                 return message.channel.send(`**${message.author.username}**, there are no quotes yet!`);
               }
@@ -117,7 +120,7 @@ module.exports = {
               let page = 1;
               let qPos = 0;
 
-              var pLimit = Math.min(pageLength, file.quotes.length);
+              let pLimit = Math.min(pageLength, file.quotes.length);
               const embed = new MessageEmbed()
                   .setColor(purple_medium)
                   .setAuthor(`${message.guild.name} Quotes`, message.guild.iconURL())
@@ -206,29 +209,73 @@ module.exports = {
               }]
             });
           break;
-/*
+
       case 'import':
           if (!message.member.hasPermission("MANAGE_MESSAGES")) {
-            return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to export the quotes!`);
+            return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to import quotes!`);
           }
-          fs.readFile(quoteFile, 'utf8', (err, data) => {
+          // check for file and if it's a JSON file
+          let uploadedFile = message.attachments.first();
+          if (!uploadedFile || uploadedFile.name.split(".")[1].toLowerCase() !== "json") {
+            return message.channel.send(`**${message.author.username}**, please upload a JSON file with a "quotes" entry in it and write your quotes so they look like this:\n\`\`\`javascript\n{\n\t"quotes": [\n\t\t"\\"Quotes are fun to use!\\" -Lil Joey 2k20",\n\t\t"\\"Heck\nyeah!\\" -Honeystix 2k20"\n\t]\n}\`\`\``);
+          }
+
+          let download;
+          try {
+            download = await fetch(uploadedFile.url).then(res => res.json());
+          }
+          catch (err) {
+            console.error(err);
+            return message.channel.send(`**${message.author.username}**, I couldn't fetch your file! Please try again later.`);
+          }
+
+          if (!download.quotes || !Array.isArray(download.quotes)) {
+            return message.channel.send(`**${message.author.username}**, please enter a "quotes" entry in your JSON file and write your quotes so they look like this:\n\`\`\`javascript\n{\n\t"quotes": [\n\t\t"\\"Quotes are fun to use!\\" -Lil Joey 2k20",\n\t\t"\\"Heck\nyeah!\\" -Honeystix 2k20"\n\t]\n}\`\`\``);
+          }
+
+          fs.readFile(quoteFile, "utf8", (err, data) => {
             if (err) {
-              console.log(err);
+              console.error(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
             }
-            else {
-              var file = JSON.parse(data);
-              if (!message.attachments) return message.channel.send(`**${message.author.username}**, please upload a text file!`);
-              for (let m = 0; m < file.quotes.length; m++) {
-                fs.appendFile(quotePath, `${file.quotes[m]}\n\n`, 'utf8', (err) => {
-                  if (err) console.log(err);
-                });
-              }
-              message.channel.send(`**${message.author.username}**, here are the quotes for ${message.guild.name} in a nice text file!`, { files: [quotePath] });
+            let file = JSON.parse(data);
+            if (file.quotes.length >= maxQuotes) {
+              return message.channel.send(`Sorry **${message.author.username}**, I can only store up to ${maxQuotes} quotes. If you want to add another one, please delete an existing one.`);
             }
+
+            let addedQuotes = skippedQuotes = 0;
+            for (let i = 0; i < download.quotes.length; i++) {
+              // check if the current server's quote file hasn't met the max limit, then check against word filter (if enabled)
+              if (file.quotes.length < maxQuotes) {
+                if (serverConfig.wordfilter.enabled) {
+                  let blocked = serverDenyList.wordfilter.filter(word => download.quotes[i].toLowerCase().replace(/ +|\n+/g, "").includes(word));
+                  if (blocked.length > 0) {
+                    skippedQuotes++;
+                    continue;
+                  }
+                }
+                try {
+                  // replace with single spaces and only one newline character if any
+                  file.quotes.push(download.quotes[i].replace(/ +/g, " ").replace(/\n+/g, "\n"));
+                  addedQuotes++;
+                }
+                catch (err) {
+                  console.error(err);
+                  skippedQuotes++;
+                }
+              }
+              else { skippedQuotes++; }
+            }
+            fs.writeFile(quoteFile, JSON.stringify(file, null, 1), 'utf8', (err) => {
+              if (err) {
+                console.error(err);
+                return message.channel.send(`Sorry **${message.author.username}**, I couldn't import your quotes!`);
+              }
+              return message.channel.send(`**${message.author.username}**, ${addedQuotes} quote(s) imported / ${skippedQuotes} quote(s) skipped! (There are now **${file.quotes.length} quotes**.)`);
+            });
           });
           break;
-          */
+
       case 'purge':
           if (!message.member.hasPermission("MANAGE_MESSAGES")) {
             return message.channel.send(`Sorry **${message.author.username}**, you need to have the \`Manage Messages\` permission to purge the quotes!`);
@@ -236,11 +283,11 @@ module.exports = {
 
           fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
-              console.log(err);
+              console.error(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
             }
             else {
-              var file = JSON.parse(data);
+              let file = JSON.parse(data);
               if (file.quotes.length < 1) {
                 return message.channel.send(`**${message.author.username}**, there are no quotes to purge!`);
               }
@@ -255,7 +302,7 @@ module.exports = {
                   if (collected.first().content.toLowerCase() === 'yes' || collected.first().content.toLowerCase() === 'y') {
                       fs.writeFile(quoteFile, JSON.stringify({quotes:[]}, null, 1), 'utf8', (err) => {
                         if (err) {
-                          console.log(err);
+                          console.error(err);
                           return message.channel.send("Something went wrong while trying to purge the server's quotes!");
                         }
                         return message.channel.send(`All of ${message.guild.name}'s quotes have been purged!`);
@@ -280,11 +327,11 @@ module.exports = {
 
           fs.readFile(quoteFile, 'utf8', (err, data) => {
             if (err) {
-              console.log(err);
+              console.error(err);
               return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
             }
             else {
-              var file = JSON.parse(data);
+              let file = JSON.parse(data);
               message.channel.send(`**${message.author.username}**, are you *sure* you want to revert your quotes to the defaults? (y/n)`)
               .then(() => {
                 message.channel.awaitMessages(response => response.content === 'yes' || response.content === 'y' || response.content === 'no' || response.content === 'n', {
@@ -296,7 +343,7 @@ module.exports = {
                   if (collected.first().content.toLowerCase() === 'yes' || collected.first().content.toLowerCase() === 'y') {
                       fs.copyFile('./config/bot/defaults/quotes.json', quoteFile, (err) => {
                         if (err) {
-                          console.log(err);
+                          console.error(err);
                           return message.channel.send("Something went wrong while trying to reset the server's quotes to their defaults!");
                         }
                         return message.channel.send(`All of ${message.guild.name}'s quotes have been reset!`);
@@ -315,44 +362,31 @@ module.exports = {
           break;
 
       default:
-          if (!args || args.length < 1) {
-            fs.readFile(quoteFile, 'utf8', (err, data) => {
-              if (err) {
-                console.log(err);
-                return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
-              }
-              else {
-                var file = JSON.parse(data);
-                if (file.quotes.length < 1) {
-                  return message.channel.send(`**${message.author.username}**, there are no quotes yet!`);
-                }
-                return message.channel.send(`> ${file.quotes[(Math.floor(Math.random() * (Math.floor(file.quotes.length) - Math.ceil(1) + 1) ) + Math.ceil(1)) - 1]}`);
-              }
-            });
+        fs.readFile(quoteFile, 'utf8', (err, data) => {
+          if (err) {
+            console.error(err);
+            return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
+          }
+
+          let file = JSON.parse(data);
+          if (file.quotes.length < 1) {
+            return message.channel.send(`**${message.author.username}**, there are no quotes yet!`);
+          }
+          else if (!args || args.length < 1) {
+            let rand = Math.floor(Math.random() * (Math.floor(file.quotes.length) - Math.ceil(1) + 1)) + Math.ceil(1);
+            return message.channel.send(`> ${file.quotes[rand - 1].replace(/\n+/g, "\n> ")}`);
           }
           else if (!isNaN(args[0])) {
-            var cleanInt = Math.trunc(args[0]);
-            fs.readFile(quoteFile, 'utf8', (err, data) => {
-              if (err) {
-                console.log(err);
-                return message.channel.send("Sorry, something went wrong while trying to read the quotes!");
-              }
-              else {
-                var file = JSON.parse(data);
-                if (file.quotes.length < 1) {
-                  return message.channel.send(`**${message.author.username}**, there are no quotes yet!`);
-                }
-                else if (cleanInt > file.quotes.length || cleanInt <= 0) {
-                  return message.channel.send(`**${message.author.username}**, there is no quote at that position!`);
-                }
-                return message.channel.send(`> ${file.quotes[cleanInt - 1]}`);
-              }
-            });
+            let cleanInt = Math.trunc(args[0]);
+            if (cleanInt > file.quotes.length || cleanInt <= 0) {
+              return message.channel.send(`**${message.author.username}**, there is no quote at that position!`);
+            }
+            return message.channel.send(`> ${file.quotes[cleanInt - 1].replace(/\n+/g, "\n> ")}`);
           }
           else {
             return message.channel.send(`**${message.author.username}**, please enter the quote's number!`);
           }
+        });
     }
-
   }
 }

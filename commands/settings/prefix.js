@@ -38,12 +38,13 @@ module.exports = {
         }
 
         // Set the prefix. In case it's all capital letters, ensure it's lowercase so the bot can be invoked. Without it, the bot can't be called as it changes the prefix's case to lowercase and checks against the server's prefix.
-        serverConfig.prefix = args.join("").toLowerCase();
-        if (serverConfig.prefix.length > 5) {
+        let prefixToSet = args.join("").toLowerCase();
+        if (prefixToSet.length > 5) {
           embed.addField("Prefix is too long!", "The prefix you're trying to set is longer than 5 characters. Please try setting a shorter prefix.");
           return message.channel.send({embed});
         }
 
+        serverConfig.prefix = prefixToSet;
         fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
           if (err) {
             console.log(err);

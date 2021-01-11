@@ -30,7 +30,7 @@ module.exports = async (bot, message) => {
       if (commandfile) { return commandfile.run(bot, message, args); }
     }
 
-    /* At this point, no command was found. If the server's blacklist filter is enabled, check for
+    /* At this point, no command was found. If the server's restricted word filter is enabled, check for
       words in the filter by removing spaces in the message. If any are found, try to delete it
       and warn the user with the server's warning message (if the warn user option is set). */
     if (serverConfig.wordfilter.enabled) {

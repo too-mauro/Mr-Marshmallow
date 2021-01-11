@@ -1,6 +1,18 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.9.4
+### Major Updates
+- Quote importing fully works! JSON files can be used to import.
+  - Must upload a file with a `"quotes"` entry when calling the command, how-to will show if no or non-JSON file found
+  - Importing will check each quote against the server's restricted word list, if enabled
+  - Will add until the end of the `"quotes"` entry or the server's maximum quote limit is reached, whichever comes first
+### Minor Updates
+- `ytdl-core` package updated to v4.4.2
+- `ytpl` package updated to v2.0.4
+- Multi-line quotes now show as a whole quote block instead of just the first line
+- `changelog` command uses a shorter link to redirect to this repository's change log
+
 ## v0.9.3
 ### Major Updates
 - `resume` command removed, functionality merged into `pause` command
@@ -10,7 +22,7 @@ This document serves as the complete change log for Mr. Marshmallow's developmen
 - Discord.js updated to v12.5.1
 - `yt-search` package updated to v2.5.1
 - `ytdl-core` package updated to v4.1.4
-- `ytpl` package updated to 2.0.0-alpha.3
+- `ytpl` package updated to v2.0.0-alpha.3
 ### Bug-fixes
 - Fixed the `remove` command so removing the first queue entry doesn't remove the currently playing song
 - Fixed a bug where playlists wouldn't work properly, bug caused from YouTube API change

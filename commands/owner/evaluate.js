@@ -36,7 +36,7 @@ module.exports = {
           else {
             fs.writeFile("./config/bot/eval.txt", evaluated, 'utf8', (err) => {
               if (err) {
-                console.log(err);
+                console.error(err);
                 return message.channel.send(`Sorry **${message.author.username}**, I couldn't write the evaluated code to file!`);
               }
               console.log(evaluated);
@@ -44,8 +44,9 @@ module.exports = {
             });
           }
         }
-        catch (e) {
-          return message.channel.send(`Error while evaluating: \`${e.message}\``);
+        catch (err) {
+          console.error(err);
+          return message.channel.send(`Error while evaluating: \`${err.message ? err.message : err}\``);
         }
 
     }
