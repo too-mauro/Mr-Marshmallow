@@ -1,6 +1,20 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.9.5
+### Minor Updates
+- Added when a playlist was last updated when added to the queue
+- Implemented a switch to use different audio quality for live/pre-recorded videos
+- Updated a few dependency packages
+  - `@discordjs/opus` bumped to v0.4.0
+  - `graceful-fs` bumped to v4.2.6
+  - `yt-search` bumped to v2.7.3
+  - `ytdl-core` bumped to v4.4.5
+  - `ytpl` bumped to v2.0.5
+### Bug-fixes
+- Fixed a "No such format found: 95" error while trying to play non-live songs
+- Fixed an issue with displaying song count when loading a playlist
+
 ## v0.9.4
 ### Major Updates
 - Quote importing fully works! JSON files can be used to import.

@@ -45,7 +45,6 @@ module.exports = {
 
       const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8"));
       let query = args.join(" ");
-      let songInfo = null;
       let song = null;
       const serverQueue = bot.queue.get(message.guild.id);
       const queueConstruct = {
@@ -73,7 +72,7 @@ module.exports = {
       if (ytdl.validateURL(query)) {
         // If the user enters a valid URL, add it to queue.
         try {
-          songInfo = await ytdl.getInfo(query);
+          let songInfo = await ytdl.getInfo(query);
           let details = songInfo.player_response.videoDetails;
           if (!details.isLive && longVideo(details.lengthSeconds)) {
             return message.channel.send(`Sorry, I couldn't add ${songInfo.playerResponse.videoDetails.title} because it's longer than 3 hours.`);
@@ -94,21 +93,20 @@ module.exports = {
       }
       else if (ytpl.validateID(query)) {
         // if this is a playlist, get every item and add to queue
-        songInfo = await ytpl(query, { limit: Infinity });
-        fs.writeFileSync("./config/bot/eval.txt", JSON.stringify(songInfo, null, 1), "utf8");
-        for (let p = 0; p < songInfo.items.length; p++) {
+        let playlist = await ytpl(query, { limit: Infinity });
+        for (let p = 0; p < playlist.items.length; p++) {
           // live videos return a null duration
-          if (!songInfo.items[p].isLive && longVideo(songInfo.items[p].duration)) {
-            message.channel.send(`Sorry, I couldn't add ${songInfo.items[p].title} because it's longer than 3 hours.`);
+          if (!playlist.items[p].isLive && longVideo(playlist.items[p].duration)) {
+            message.channel.send(`Sorry, I couldn't add ${playlist.items[p].title} because it's longer than 3 hours.`);
             continue;
           }
           try {
             song = {
-              title: songInfo.items[p].title,
-              url: songInfo.items[p].url,
-              duration: songInfo.items[p].duration ? songInfo.items[p].duration : "LIVE",
-              queueDuration: songInfo.items[p].duration ? timeToSeconds(songInfo.items[p].duration) : 0,
-              thumbnail: songInfo.items[p].bestThumbnail.url,
+              title: playlist.items[p].title,
+              url: playlist.items[p].url,
+              duration: playlist.items[p].duration ? playlist.items[p].duration : "LIVE",
+              queueDuration: playlist.items[p].duration ? timeToSeconds(playlist.items[p].duration) : 0,
+              thumbnail: playlist.items[p].thumbnails[0].url,
               requester: message.member.nickname ? `${message.member.nickname} (${message.author.tag})` : message.author.tag
             };
 
@@ -131,14 +129,16 @@ module.exports = {
           const embed = new MessageEmbed()
             .setColor(blue_dark)
             .setTitle("Added to Queue")
-            .setDescription(`[${songInfo.title}](${songInfo.url})`)
-            .addField("Description", songInfo.description ? songInfo.description : "None available.", false)
-            .addField("Songs", songInfo.estimated_items, true)
-            .setThumbnail(song.thumbnail);
+            .setDescription(`[${playlist.title}](${playlist.url})`)
+            .addField("Description", playlist.description ? playlist.description : "None available.", false)
+            .addField("View Count", playlist.views, true)
+            .addField("Last Updated", playlist.lastUpdated, true)
+            .addField("Song Count", playlist.estimatedItemCount, false)
+            .setThumbnail(playlist.thumbnails[0].url);
           message.channel.send({embed});
         }
         else {
-          message.channel.send(`**Added to Queue**\n${songInfo.title}\n"**Description:**" ${songInfo.description ? songInfo.description : "None available."}\n**Songs:** ${songInfo.estimated_items}`);
+          message.channel.send(`**Added to Queue**\n${playlist.title} (${playlist.url})\n**Description:** ${playlist.description ? playlist.description : "None available."}\n**View Count:** ${playlist.views}\n**Last Updated:** ${playlist.lastUpdated}\n**Song Count:** ${playlist.estimatedItemCount}`);
         }
 
         if (!serverQueue) {

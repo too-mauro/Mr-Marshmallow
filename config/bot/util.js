@@ -55,22 +55,20 @@ module.exports = {
     }
 
     let stream = null;
-    let options = null;
     try {
-      if (queue.songs[0].queueDuration > 0) {
-        // non-live songs have more than 0 seconds
-        options = { filter: 'audio', highWaterMark: 1 << 25, volume: false };
-      }
-      else { options = { filter: 'audio', highWaterMark: 1 << 25, volume: false, quality: '95' }; }
-      stream = ytdl(queue.songs[0].url, options);
+      // an audio quality of 95 works best for live-streamed videos, while 251 works for non-live ones
+      // this operator checks whether the queued video is live (has a queue duration of 0 as determined in the play command)
+      let audioQuality = (queue.songs[0].queueDuration == 0) ? '95' : '251';
+      stream = ytdl(queue.songs[0].url, { filter: 'audio', highWaterMark: 1 << 25, volume: false, quality: audioQuality });
     }
     catch (err) {
+      console.error(err);
+      message.channel.send(`I couldn't play a song!\n${err.message ? err.message : err}`);
       if (queue) {
         queue.songs.shift();
         module.exports.playSong(bot, queue.songs[0], message);
       }
-      console.error(err);
-      return message.channel.send(`I couldn't play a song!\n${err.message ? err.message : err}`);
+      return;
     }
 
     try {
