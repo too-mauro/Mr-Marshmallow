@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://user-images.githubusercontent.com/49416852/84093143-62d60280-a9c7-11ea-89a7-b06d7eafad5b.png" title="Mr. Marshmallow" alt="Mr. Marshmallow">
+  <img src="https://user-images.githubusercontent.com/49416852/115483192-509b3680-a21e-11eb-9504-93c8845379df.png" title="Mr. Marshmallow" alt="Mr. Marshmallow" width="300" height="200">
 
   # Mr. Marshmallow
 
@@ -22,16 +22,24 @@
 - Play a game of trivia against other server members!
 - Roll for a 6, a 12, a D20, or a D100!
 - Dab on someone!
+- Battle other server members in turn-based combat!
 
 ## Installation & Setup
-Mr. Marshmallow runs on top of Node.js v14 or higher. Please refer to the [Node.js website](https://nodejs.org/en/) for installation.
+Mr. Marshmallow has been made to run (mostly) out of the box! There are a few steps you need to follow for this to work properly.
 
-Once Node.js is installed, clone or download this repository. Open a terminal/command prompt window, go to the directory where you downloaded the repository, and type `node server.js`, which will run Mr. Marshmallow!
+This project runs on top of Node.js, so you will need to install version 14 or higher (refer to the [Node.js website](https://nodejs.org/en/) for help installing).
 
-PM2, a Node.js process manager, is recommended to keep Mr. Marshmallow up and running. In the case of an unexpected shutdown, Mr. Marshmallow will be able to get right back up when your system starts! Please refer to [this guide](https://discordjs.guide/improving-dev-environment/pm2.html#installation) on how to set up PM2.
+Once Node.js is installed, clone or download this repository. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a new bot user. You will receive a token that you will need to run this bot. Go to the directory where you downloaded this repository and create a new file called `.env` in the same location as `server.js`. In it, enter your token using the following structure:
+```
+TOKEN='<your-token-here>'
+```
+Save the file and close it. From there, open a terminal/command prompt window, and type `node server.js`, which will run Mr. Marshmallow!
 
-### A Note about Music Functionality
-Starting with v0.9, Mr. Marshmallow uses new packages and requires the use of the "ffmpeg" application for the music commands to function properly. If you use an Ubuntu-based system, you may need to install the `build-essentials` tool before installing the needed music packages.
+### Getting Music Functionality to Work
+Starting with v0.9, Mr. Marshmallow requires the use of the "ffmpeg" application for the music commands to function properly. If you plan to use these commands, install this application.
+
+### Keeping the Bot Online
+PM2, a Node.js process manager, is recommended to keep Mr. Marshmallow up and running. In the case of an unexpected shutdown, it will be able to get right back up when your system starts! Please refer to [this guide](https://discordjs.guide/improving-dev-environment/pm2.html#installation) on how to set up PM2.
 
 ## License
 Mr. Marshmallow is currently released under the [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.

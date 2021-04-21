@@ -3,14 +3,14 @@
 module.exports = {
     config: {
         name: "pause",
-        aliases: ["stop", "resume"],
+        description: "Pauses or resumes a currently playing or paused song.",
         usage: "",
-        category: "music",
-        description: "Pauses or resumes a currently playing or paused song."
+        aliases: ["pa", "stop", "resume"],
+        category: "music"
     },
     run: async (bot, message, args) => {
 
-      const serverQueue = bot.queue.get(message.guild.id);
+      const serverQueue = bot.musicQueues.get(message.guild.id);
       if (!serverQueue) {
         return message.channel.send(`**${message.author.username}**, there's nothing playing right now!`);
       }

@@ -5,7 +5,8 @@ command once the above two checks pass. If a command is found, this event runs
 it. If the bot is mentioned, it gives the server's prefix to the user. If neither
 occur, it runs the blacklist word filter if the server explicitly turned it on. */
 
-const fs = require("fs");
+const {readFileSync} = require("fs");
+const {restrictedWordsFiltered} = require("../../config/bot/util.js");
 
 module.exports = async (bot, message) => {
 
@@ -15,7 +16,7 @@ module.exports = async (bot, message) => {
     else if (!message.guild.available || !message.guild.me.permissionsIn(message.channel).has("SEND_MESSAGES")) return;
 
     // Get the server's configuration file data.
-    const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
+    const serverConfig = JSON.parse(readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8"));
     const mentionRegex = new RegExp(`^(<@!?${bot.user.id}>)\\s*`);
 
     /* Make the prefix lowercase (if applicable) which ensures a case-insensitive
@@ -27,35 +28,16 @@ module.exports = async (bot, message) => {
       const args = message.content.slice(cleanPrefix.length).trim().split(/ +/g);
       const cmd = args.shift().toLowerCase();
       const commandfile = bot.commands.get(cmd) || bot.commands.get(bot.aliases.get(cmd));
-      if (commandfile) { return commandfile.run(bot, message, args); }
+      if (commandfile) return commandfile.run(bot, message, args);
     }
 
     /* At this point, no command was found. If the server's restricted word filter is enabled, check for
       words in the filter by removing spaces in the message. If any are found, try to delete it
       and warn the user with the server's warning message (if the warn user option is set). */
-    if (serverConfig.wordfilter.enabled) {
-      const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
-      const blocked = serverDenyList.wordfilter.filter(word => message.content.toLowerCase().replace(/ +/g, "").includes(word));
-      if (blocked.length > 0) {
-        if (message.guild.me.permissionsIn(message.channel).has("MANAGE_MESSAGES")) {
-          message.delete();
-        }
-        else { message.channel.send("I couldn't delete the message with the restricted word(s)!"); }
-        if (serverConfig.wordfilter.warnings.enabled) {
-          if (serverConfig.wordfilter.warnings.warnType == "channel") {
-            return message.channel.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
-          }
-          else if (serverConfig.wordfilter.warnings.warnType == "dm") {
-            message.author.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
-            return message.channel.send(`${message.author} has been warned for using a restricted word!`);
-          }
-        }
-      }
-    }
+    if (restrictedWordsFiltered(message, serverConfig)) return;
 
     // If a user mentions the bot outside of a command, return the server's prefix.
     if (mentionRegex.test(message.content)) {
       return message.channel.send(`Forgot my prefix? **${message.guild.name}**'s prefix is: \` ${serverConfig.prefix} \``);
     }
-
 }

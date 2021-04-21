@@ -8,7 +8,7 @@ post loses all of its pins, the message will be "unpinned" (removed) from the
 corkboard channel.
 */
 
-const fs = require('fs');
+const {readFileSync, writeFileSync} = require("fs");
 const { MessageEmbed } = require("discord.js");
 const { extension } = require("../../config/bot/util.js");
 
@@ -18,7 +18,7 @@ module.exports = async (bot, reaction, user) => {
 
     // check if the CorkBoard and  Democratic Pin Mode is enabled for the server; if it's not, stop here
     const message = reaction.message;
-    const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
+    const serverConfig = JSON.parse(readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
     if (!serverConfig.corkboard.enabled) return;
     else if (serverConfig.corkboard.pinMode == "instapin") return;
 
@@ -30,15 +30,15 @@ module.exports = async (bot, reaction, user) => {
     let pinChannel = message.guild.channels.cache.find(c => c.id === serverConfig.corkboard.channelID);
     if (!pinChannel) {
         serverConfig.corkboard.channelID = null;
-        return fs.writeFileSync(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
+        return writeFileSync(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
     }
 
     // look for pinned messages already in the corkboard channel with the message's ID. The try-catch block is necessary in case there are non-embed messages in the CorkBoard channel.
     const fetchedMessages = await pinChannel.messages.fetch({ limit: 100 });
     let pins = undefined;
     try { pins = fetchedMessages.find(m => m.embeds[0].footer.text.endsWith(message.id)); }
-    catch (e) {
-      console.log(e);
+    catch (err) {
+      console.error(err);
       message.channel.send(`Couldn't find the original pinned message in <#${serverConfig.corkboard.channelID}>! Are there any non-embed messages in there...?`);
     }
 

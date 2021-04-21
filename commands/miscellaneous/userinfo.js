@@ -3,22 +3,22 @@ This grabs information about the person who invoked the command, or about anothe
 member of the server if they are mentioned.
 */
 
-const { MessageEmbed } = require("discord.js");
-const { red_light } = require("../../config/bot/colors.json");
-const { getUserFromMention } = require("../../config/bot/util.js");
+const {MessageEmbed} = require("discord.js");
+const {red_light} = require("../../config/bot/colors.json");
+const {getUserFromMention} = require("../../config/bot/util.js");
 
 module.exports = {
     config: {
         name: "userinfo",
         description: "Gives information about yourself or a user.",
         usage: "(@mention)",
-        category: "miscellaneous",
-        aliases: ["ui"]
+        aliases: ["ui"],
+        category: "miscellaneous"
     },
     run: async (bot, message, args) => {
 
       let member;
-      if (!args || args.length < 1) { member = message.member; }
+      if (!args || args.length < 1) member = message.member;
       else {
           member = getUserFromMention(args[0], message.guild);
           if (!member) {
@@ -38,11 +38,11 @@ module.exports = {
       .addField(`**Joined ${message.guild.name} On:**`, member.joinedAt, false);
       if (member.premiumSince) embed.addField(`**Boosting the Server Since:**`, member.premiumSince, false);
 
-      // List out the user's roles, if any, from highest to lowest rank
+      // List out the user's roles, if any, from highest to lowest rank (the server ID counts as the "@everyone" role)
       const roles = member.roles.cache.filter(r => r.id !== message.guild.id);
       embed.addField(`**Roles (${roles.size}):**`, (roles.size > 0) ? roles.map(r => r).sort((a, b) => b.position - a.position || b.id - a.id).join(" ") : "No roles!", false);
 
-      if (member == message.guild.owner) { embed.setDescription("**Server Owner**", false); }
+      if (member == message.guild.owner) embed.setDescription("**Server Owner**", false);
       embed.setFooter(bot.user.username, bot.user.displayAvatarURL());
       return message.channel.send(embed);
 

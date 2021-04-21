@@ -4,18 +4,18 @@ the person running the command has either the "Manage Server" or "Administrator"
 permissions and prevents anyone who doesn't have either from running it.
 */
 
-const fs = require("fs");
-const { MessageEmbed } = require("discord.js");
-const { orange } = require("../../config/bot/colors.json");
-const { defaultPrefix } = require("../../config/bot/settings.json");
+const {readFileSync, writeFile} = require("fs");
+const {MessageEmbed} = require("discord.js");
+const {orange} = require("../../config/bot/colors.json");
+const {defaultPrefix} = require("../../config/bot/settings.json");
 
 module.exports = {
     config: {
         name: "doormat",
-        aliases: ["dm"],
+        description: "Configures the DoorMat feature for this server. Requires **Manage Server** permission.",
         usage: "(on) (off) (channel <channel>) (welcome <message>) (leave <message>) (ban <message>)",
-        category: "settings",
-        description: "Configures the DoorMat feature for this server. Requires **Manage Server** permission."
+        aliases: ["dm"],
+        category: "settings"
     },
     run: async (bot, message, args) => {
 
@@ -23,79 +23,71 @@ module.exports = {
           return message.channel.send(`**${message.author.username}**, you need to have the \`Manage Server\` or \`Administrator\` permissions to use this command!`);
         }
 
-        let serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
+        const serverConfig = JSON.parse(readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8"));
+        let demoWelcome = serverConfig.doormat.welcomeMessage;
+        let demoLeave = serverConfig.doormat.leaveMessage;
+        let demoBan = serverConfig.doormat.banMessage;
         const embed = new MessageEmbed()
             .setColor(orange)
             .setTitle(`${bot.user.username} DoorMat Settings`);
 
-        if (args[0] && isNaN(args[0])) { args[0] = args[0].toLowerCase(); }
+        if (args[0] && isNaN(args[0])) args[0] = args[0].toLowerCase();
         switch (args[0]) {
-          case 'on':
+          case "on":
             if (serverConfig.doormat.enabled) {
-              embed.setDescription(`**DoorMat already enabled.**`)
-              .addField(`DoorMat already enabled for this server.`, `If you would like to turn it off, do \`${serverConfig.prefix}doormat off\`.`);
+              embed.setDescription(`**DoorMat already enabled.**\nIf you would like to turn it off, do \`${serverConfig.prefix}doormat off\`.`);
               return message.channel.send({embed});
             }
             serverConfig.doormat.enabled = true;
-            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
+            writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
               if (err) {
-                console.log(err);
+                console.error(err);
                 return message.channel.send("Something went wrong while trying to turn on the DoorMat feature! Please try again later.");
               }
             });
 
-            embed.setDescription(`**DoorMat enabled.**`);
-            if (serverConfig.doormat.channelID && !serverConfig.doormat.channelID.deleted) {
-              embed.addField(`The DoorMat feature is now enabled.`, `A doormat channel has already been set, so you're ready to go!`);
-            }
-            else {
-              embed.addField(`The DoorMat feature is now enabled.`, `A doormat channel has not been set yet, so please set one with \`${serverConfig.prefix}doormat channel <channel mention>\`.`);
-            }
+            let channelSet = (serverConfig.doormat.channelID && !serverConfig.doormat.channelID.deleted) ? "A doormat channel has already been set, so you're ready to go!" : `A doormat channel has not been set yet, so please set one with \`${serverConfig.prefix}doormat channel <channel mention>\`.`;
+            embed.setDescription(`**DoorMat enabled.**\n${channelSet}`);
             return message.channel.send({embed});
 
-          case 'off':
+          case "off":
             if (!serverConfig.doormat.enabled) {
-              embed.setDescription(`**DoorMat already disabled.**`)
-              .addField(`The DoorMat feature is already disabled for this server.`, `If you would like to turn it on, do \`${serverConfig.prefix}doormat on\`.`);
+              embed.setDescription(`**DoorMat already disabled.**\nIf you would like to turn it on, do \`${serverConfig.prefix}doormat on\`.`);
               return message.channel.send({embed});
             }
             serverConfig.doormat.enabled = false;
-            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
+            writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
               if (err) {
-                console.log(err);
+                console.error(err);
                 return message.channel.send("Something went wrong while trying to turn off the DoorMat feature! Please try again later.");
               }
             });
 
-            embed.setDescription(`**DoorMat disabled.**`)
-            .addField(`The DoorMat feature is disabled for this server.`, `If you would like to turn it on again, do \`${serverConfig.prefix}doormat on\`.`);
+            embed.setDescription(`**DoorMat disabled.**\nIf you would like to turn it on again, do \`${serverConfig.prefix}doormat on\`.`);
             return message.channel.send({embed});
 
-          case 'channel':
+          case "channel":
             // Show the general help message for the channel argument.
             if (!args.slice(1) || args.slice(1).length < 1) {
-              embed.setDescription(`Sets the channel to send welcome, leave, and ban messages.`)
+              embed.setDescription("Sets the channel to send welcome, leave, and ban messages.")
               .addField("Current DoorMat Channel:", serverConfig.doormat.channelID ? `<#${serverConfig.doormat.channelID}>` : `**None set!**`)
               .addField("To update:", `\`${serverConfig.prefix}doormat channel <channel name/mention>\``);
               return message.channel.send({embed});
             }
 
             // Try to find a text channel based on name or channel mention, and if there's no match, let the user know. Otherwise, get its ID.
-            if (args[1].startsWith('<@') && args[1].endsWith('>')) {
-              embed.setDescription(`Cannot set a user.`);
-              embed.addField(`You cannot set a user mention to be the DoorMat channel!`, `Please try again.`, true);
+            if (args[1].startsWith("<@") && args[1].endsWith(">")) {
+              embed.setDescription("You cannot set a user mention to be the DoorMat channel! Please try again.");
               return message.channel.send({embed});
             }
-            else if (args[1].startsWith('<#') && args[1].endsWith('>')) {
-              var channelID = args[1].slice(2, args[1].length - 1);  // removes the preceding "<#" and ending ">"
-              if (message.guild.channels.cache.get(channelID) == undefined) {
-                embed.setDescription(`Cannot set a non-existent channel.`);
-                embed.addField(`You cannot set a non-existent channel to be the DoorMat channel!`, `Please try again.`, true);
+            else if (args[1].startsWith("<#") && args[1].endsWith(">")) {
+              let channelID = args[1].slice(2, args[1].length - 1);  // removes the preceding "<#" and ending ">"
+              if (!message.guild.channels.cache.get(channelID)) {
+                embed.setDescription("You cannot set a non-existent channel to be the DoorMat channel! Please try again.");
                 return message.channel.send({embed});
               }
-              else if (message.guild.channels.cache.get(channelID).type !== 'text') {
-                embed.setDescription(`Cannot set non-text channels.`);
-                embed.addField(`You cannot set a non-text channel to be the DoorMat channel!`, `Please try again.`, true);
+              else if (message.guild.channels.cache.get(channelID).type !== "text") {
+                embed.setDescription("You cannot set a non-text channel to be the DoorMat channel! Please try again.");
                 return message.channel.send({embed});
               }
               serverConfig.doormat.channelID = channelID;
@@ -104,28 +96,25 @@ module.exports = {
               if (!serverConfig.doormat.enabled) serverConfig.doormat.enabled = true;
 
               // Save the new settings to the server's config.json file.
-              fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
+              writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
                 if (err) {
-                  console.log(err);
+                  console.error(err);
                   return message.channel.send("Something went wrong while trying to set the DoorMat channel! Please try again later.");
                 }
               });
 
-              embed.setDescription(`DoorMat channel set.`);
-              embed.addField(`The DoorMat channel has now been set to: `, `<#${serverConfig.doormat.channelID}>`);
+              embed.setDescription(`DoorMat channel now set to:\n<#${serverConfig.doormat.channelID}>`);
               return message.channel.send({embed});
             }
             else {
-              var channel = message.guild.channels.cache.find(textChannel => textChannel.name === args[1].toLowerCase());
-              var id = channel ? channel.id : null;
-              if (id == null) {
-                embed.setDescription(`No channel found.`);
-                embed.addField(`A channel with the name \`${args[1]}\` you entered does not exist!`, `Please try again.`, true);
+              let channel = message.guild.channels.cache.find(textChannel => textChannel.name === args[1].toLowerCase());
+              let id = channel ? channel.id : null;
+              if (!id) {
+                embed.setDescription(`A channel with the name \`${args[1]}\` you entered does not exist! Please try again.`);
                 return message.channel.send({embed});
               }
-              else if (channel.type !== 'text') {
-                embed.setDescription(`Cannot set non-text channels.`);
-                embed.addField(`You cannot set a non-text channel to be the DoorMat channel!`, `Please try again.`, true);
+              else if (channel.type !== "text") {
+                embed.setDescription("You cannot set a non-text channel to be the DoorMat channel! Please try again.");
                 return message.channel.send({embed});
               }
               serverConfig.doormat.channelID = channel.id;
@@ -134,88 +123,90 @@ module.exports = {
               if (!serverConfig.doormat.enabled) serverConfig.doormat.enabled = true;
 
               // Save the new settings to the server's config.json file.
-              fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
+              writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
                 if (err) {
-                  console.log(err);
+                  console.error(err);
                   return message.channel.send("Something went wrong while trying to set the DoorMat channel! Please try again later.");
                 }
               });
 
-              embed.setDescription(`DoorMat channel set.`);
-              embed.addField(`The DoorMat channel has now been set to: `, `<#${serverConfig.doormat.channelID}>`);
+              embed.setDescription(`DoorMat channel now been set to:\n<#${serverConfig.doormat.channelID}>`);
               return message.channel.send({embed});
             }
 
-          case 'welcome':
+          case "welcome":
               if (!args.slice(1) || args.slice(1).length < 1) {
-                embed.setDescription(`Sets the welcome message.`);
-                embed.addField("Current Welcome Message:", serverConfig.doormat.welcomeMessage);
-                embed.addField("To update:", `\`${serverConfig.prefix}doormat welcome <message>\``);
-                embed.addField("Pro-Tip!", "Typing `username` will mention the newly joined user, and `servername` will change to the server's current name.");
+                demoWelcome = demoWelcome.replace(/<user>/g, message.author).replace(/<server>/g, `**${message.guild}**`);
+                if (message.guild.rulesChannel) demoWelcome = demoWelcome.replace(/<rules>/g, message.guild.rulesChannel);
+                embed.setDescription("Sets the welcome message.")
+                .addField("Current Welcome Message:", serverConfig.doormat.welcomeMessage)
+                .addField("Welcome Message will look like this when someone joins:", demoWelcome)
+                .addField("To update:", `\`${serverConfig.prefix}doormat welcome <message>\``)
+                .addField("Quick Tip!", "`<user>` - will mention the newly joined user\n`<server>` - will display the server's current name\n`<rules>` - will mention the server's rules channel (if one has been set)");
                 return message.channel.send({embed});
               }
               serverConfig.doormat.welcomeMessage = args.slice(1).join(" ");
-              fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
+              writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
                 if (err) {
-                  console.log(err);
+                  console.error(err);
                   return message.channel.send("Something went wrong while trying to set the welcome message! Please try again later.");
                 }
               });
 
-              embed.setDescription(`DoorMat welcome message set.`);
-              embed.addField(`The welcome message has now been set to: `, serverConfig.doormat.welcomeMessage);
+              embed.setDescription(`DoorMat welcome message now been set to:\n${serverConfig.doormat.welcomeMessage}`);
               return message.channel.send({embed});
 
-          case 'leave':
+          case "leave":
             if (!args.slice(1) || args.slice(1).length < 1) {
-              embed.setDescription(`Sets the leave message.`);
-              embed.addField("Current Leave Message:", serverConfig.doormat.leaveMessage);
-              embed.addField("To update:", `\`${serverConfig.prefix}doormat leave <message>\``);
-              embed.addField("Pro-Tip!", "Typing `username` will display the left user's tag, and `servername` will change to the server's current name.");
+              demoLeave = demoLeave.replace(/<user>/g, `**${message.author.tag}**`).replace(/<server>/g, `**${message.guild.name}**`);
+              embed.setDescription("Sets the leave message.")
+              .addField("Current Leave Message:", serverConfig.doormat.leaveMessage)
+              .addField("Leave Message will look like this when someone leaves:", demoLeave)
+              .addField("To update:", `\`${serverConfig.prefix}doormat leave <message>\``)
+              .addField("Quick Tip!", "`<user>` - will display the tag of the user who left\n`<server>` - will display the server's current name");
               return message.channel.send({embed});
             }
             serverConfig.doormat.leaveMessage = args.slice(1).join(" ");
-            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
+            writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
               if (err) {
-                console.log(err);
+                console.error(err);
                 return message.channel.send("Something went wrong while trying to set the leave message! Please try again later.");
               }
             });
 
-            embed.setDescription(`DoorMat leave message set.`);
-            embed.addField(`The leave message has now been set to: `, serverConfig.doormat.leaveMessage);
+            embed.setDescription(`DoorMat leave message now been set to:\n${serverConfig.doormat.leaveMessage}`);
             return message.channel.send({embed});
 
-          case 'ban':
+          case "ban":
             if (!args.slice(1) || args.slice(1).length < 1) {
-              embed.setDescription(`Sets the ban message.`);
-              embed.addField("Current Ban Message:", serverConfig.doormat.banMessage);
-              embed.addField("To update:", `\`${serverConfig.prefix}doormat ban <message>\``);
-              embed.addField("Pro-Tip!", "Typing `username` will display the banned user's tag, and `servername` will change to the server's current name.");
+              demoBan = demoBan.replace(/<user>/g, `**${message.author.tag}**`).replace(/<server>/g, `**${message.guild.name}**`);
+              embed.setDescription("Sets the ban message.")
+              .addField("Current Ban Message:", serverConfig.doormat.banMessage)
+              .addField("Ban Message will look like this when someone is banned:", demoBan)
+              .addField("To update:", `\`${serverConfig.prefix}doormat ban <message>\``)
+              .addField("Quick Tip!", "`<user>` - will display the banned user's tag\n`<server>` - will display the server's current name");
               return message.channel.send({embed});
             }
             serverConfig.doormat.banMessage = args.slice(1).join(" ");
-            fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
+            writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), (err) => {
               if (err) {
-                console.log(err);
+                console.error(err);
                 return message.channel.send("Something went wrong while trying to set the ban message! Please try again later.");
               }
             });
 
-            embed.setDescription(`DoorMat ban message set.`);
-            embed.addField(`The ban message has now been set to: `, serverConfig.doormat.banMessage);
+            embed.setDescription(`DoorMat ban message now been set to:\n${serverConfig.doormat.banMessage}`);
             return message.channel.send({embed});
 
           default:
             // show general doormat settings
-            embed.setDescription(`Turns the DoorMat feature on or off, changes the channel to send welcome, leave, and ban messages, and changes the messages themselves.`);
-            embed.addField("Change options with:", `on - turns on DoorMat\noff - turns off DoorMat\nchannel - sets the DoorMat channel\nwelcome - sets the welcome message\nleave - sets the leave message\nban - sets the ban message`)
+            embed.setDescription("Turns the DoorMat feature on or off, changes the channel to send welcome, leave, and ban messages, and changes the messages themselves.")
+            .addField("Change options with:", "on - turns on DoorMat\noff - turns off DoorMat\nchannel - sets the DoorMat channel\nwelcome - sets the welcome message\nleave - sets the leave message\nban - sets the ban message")
             .addField("DoorMat:", serverConfig.doormat.enabled ? "**enabled**" : "**disabled**", true)
             .addField(`DoorMat Channel: `, serverConfig.doormat.channelID ? `<#${serverConfig.doormat.channelID}>` : `**None set!**`, true)
             .addField("Welcome Message: ", `${serverConfig.doormat.welcomeMessage}`)
             .addField("Leave Message: ", `${serverConfig.doormat.leaveMessage}`)
             .addField("Ban Message: ", `${serverConfig.doormat.banMessage}`);
-
             return message.channel.send({embed});
         }
     }

@@ -5,9 +5,10 @@ join the specific channel the user is in, to join. */
 module.exports = {
     config: {
         name: "join",
+        description: "Joins the user if they're in a voice channel.",
         usage: "",
-        category: "music",
-        description: "Joins the user if they're in a voice channel."
+        aliases: ["jo"],
+        category: "music"
     },
     run: async (bot, message, args) => {
 
@@ -23,23 +24,30 @@ module.exports = {
         else if (!message.member.voice.channel.joinable) {
           return message.channel.send(`**${message.author.username}**, I can't join \`${message.member.voice.channel.name}\`! Do I not have permission to join it...?`);
         }
-        else if (message.member.voice.channel.full && !message.guild.me.hasPermission("MOVE_MEMBERS")) {
+        else if (message.member.voice.channel.full && !message.guild.me.permissionsIn(message.member.voice.channel).has("MOVE_MEMBERS")) {
           return message.channel.send(`**${message.author.username}**, I can't join \`${message.member.voice.channel.name}\` because it's full! Please either make some room for me or give me the \`Move Members\` permission.`);
         }
 
         // Check if the bot's with the user already
         if (message.member.voice.channel == message.guild.me.voice.channel) {
-          return message.channel.send(`**${message.author.username}**, I'm already in \`${message.member.voice.channel}\` with you!`);
+          return message.channel.send(`**${message.author.username}**, I'm already in \`${message.member.voice.channel.name}\` with you!`);
         }
-        const serverQueue = bot.queue.get(message.guild.id);
-        if (serverQueue) {
-          serverQueue.voiceChannel = message.member.voice.channel;
-          serverQueue.connection = await message.member.voice.channel.join();
-          bot.queue.set(message.guild.id, serverQueue);
+        const serverQueue = bot.musicQueues.get(message.guild.id);
+        try {
+          if (serverQueue) {
+            serverQueue.voiceChannel = message.member.voice.channel;
+            serverQueue.connection = await message.member.voice.channel.join();
+            bot.musicQueues.set(message.guild.id, serverQueue);
+          }
+          else {
+            let connection = await message.member.voice.channel.join();
+            connection.setSpeaking(0);
+          }
+          return message.channel.send(`Joined \`${message.member.voice.channel.name}\`!`);
         }
-        else {
-          message.member.voice.channel.join();
+        catch (err) {
+          console.error(err);
+          return message.channel.send("Something went wrong while trying to join the voice channel! ", err.message);
         }
-        return message.channel.send(`Joined \`${message.member.voice.channel.name}\`!`);
     }
 }

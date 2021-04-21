@@ -1,19 +1,20 @@
 /*
 This command simply deletes the author's original message (if it has the
 permission) and repeats it. For the message to be deleted, the bot needs the
-`Manage Messages` permission.  This also checks for any blacklisted words; if at
+`Manage Messages` permission.  This also checks for any restricted words; if at
 least one is found, it will stop before anything is repeated and will warn the
 user if the option is enabled.
 */
 
-const fs = require("fs");
+const {readFileSync} = require("fs");
+const {restrictedWordsFiltered} = require("../../config/bot/util.js");
 
 module.exports = {
   config: {
       name: "say",
       description: "Repeats whatever you say.",
-      aliases: ["s", "parrot"],
       usage: "<text>",
+      aliases: ["s", "parrot"],
       category: "fun"
   },
   run: async (bot, message, args) => {
@@ -24,28 +25,11 @@ module.exports = {
     }
 
     // check if bot has "manage messages" permissions
-    if (message.guild.me.permissionsIn(message.channel).has("MANAGE_MESSAGES")) { message.delete(); }
-
-    // check if the string has a blacklisted word and stop here if at least 1 is found
-    const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
-    if (serverConfig.wordfilter.enabled) {
-      let serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
-      const blocked = serverDenyList.wordfilter.filter(word => message.content.toLowerCase().includes(word));
-      if (blocked.length > 0) {
-        if (serverConfig.wordfilter.warnings.enabled) {
-          if (serverConfig.wordfilter.warnings.warnType == "channel") {
-            return message.channel.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
-          }
-          else if (serverConfig.wordfilter.warnings.warnType == "dm") {
-            message.author.send(serverConfig.wordfilter.warnings.message.replace(/username/g, message.author));
-            return message.channel.send(`${message.author} has been warned for using a restricted word!`);
-          }
-        }
-      }
-    }
+    if (message.guild.me.permissionsIn(message.channel).has("MANAGE_MESSAGES")) message.delete();
+    const serverConfig = JSON.parse(readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8"));
+    if (restrictedWordsFiltered(message, serverConfig)) return;
 
     // get everything after the message, join it as one combined string
-    let text = args.join(" ");
-    return message.channel.send(text);
+    return message.channel.send(args.join(" "));
   }
 }

@@ -1,19 +1,20 @@
+/* This command shows the current queue, if there's at least one song playing. */
 
-const { MessageEmbed } = require("discord.js");
-const { blue_dark } = require("../../config/bot/colors.json");
-const { secondsToTime } = require("../../config/bot/util.js");
+const {MessageEmbed} = require("discord.js");
+const {blue_dark} = require("../../config/bot/colors.json");
+const {secondsToTime} = require("../../config/bot/util.js");
 
 module.exports = {
     config: {
         name: "queue",
-        aliases: ["qu", "pl", "playlist"],
+        description: "Shows the queue.",
         usage: "",
-        category: "music",
-        description: "Shows the queue."
+        aliases: ["qu", "pl", "playlist"],
+        category: "music"
     },
     run: async (bot, message, args) => {
 
-      const serverQueue = bot.queue.get(message.guild.id);
+      const serverQueue = bot.musicQueues.get(message.guild.id);
       if (!serverQueue) {
         return message.channel.send(`**${message.author.username}**, there's nothing playing right now!`);
       }
@@ -48,14 +49,14 @@ module.exports = {
       if (serverQueue.songs.length <= pageLength) { return message.channel.send({embed}); }
       else {
         message.channel.send({embed}).then(msg => {
-          msg.react("⬅").then(() => msg.react('➡'));
-          const backwardsFilter = (reaction, user) => reaction.emoji.name === '⬅' && user.id === message.author.id;
-          const forwardsFilter = (reaction, user) => reaction.emoji.name === '➡' && user.id === message.author.id;
+          msg.react("⬅").then(() => msg.react("➡"));
+          const backwardsFilter = (reaction, user) => reaction.emoji.name === "⬅" && user.id !== bot.user.id;
+          const forwardsFilter = (reaction, user) => reaction.emoji.name === "➡" && user.id !== bot.user.id;
 
-          const backwards = msg.createReactionCollector(backwardsFilter, {timer: 6000});
-          const forwards = msg.createReactionCollector(forwardsFilter, {timer: 6000});
+          const backwards = msg.createReactionCollector(backwardsFilter, {timer: 3000});
+          const forwards = msg.createReactionCollector(forwardsFilter, {timer: 3000});
 
-          backwards.on('collect', r => {
+          backwards.on("collect", r => {
             if (page === 1) { page = pages; }
             else { page--; }
             if (page == 1) {
@@ -95,7 +96,7 @@ module.exports = {
             msg.edit(embed);
           });
 
-          forwards.on('collect', r => {
+          forwards.on("collect", r => {
             if (page === pages) { page = 1; }
             else { page++; }
             if (page == 1) {
@@ -125,7 +126,6 @@ module.exports = {
             embed.setFooter(`Page ${page} / ${pages}  |  ${serverQueue.songs.length} total ${serverQueue.songs.length == 1 ? "song" : "songs"}  |  ${secondsToTime(serverQueue.totalLength)} total length`, bot.user.displayAvatarURL());
             msg.edit(embed);
           });
-
         });
       }
 

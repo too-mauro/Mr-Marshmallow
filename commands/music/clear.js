@@ -4,10 +4,10 @@ one exists. */
 module.exports = {
     config: {
         name: "clear",
-        aliases: ["c"],
+        description: "Clears the queue.",
         usage: "",
-        category: "music",
-        description: "Clears the queue."
+        aliases: ["c"],
+        category: "music"
     },
     run: async (bot, message, args) => {
 
@@ -19,13 +19,13 @@ module.exports = {
         return message.channel.send(`**${message.author.username}**, you need to be in the same voice channel to use this command!`);
       }
 
-      const serverQueue = bot.queue.get(message.guild.id);
+      const serverQueue = bot.musicQueues.get(message.guild.id);
       if (serverQueue) {
         if (serverQueue.textChannel !== message.channel) {
           return message.channel.send(`Sorry **${message.author.username}**, I'm bound to ${serverQueue.textChannel} right now!`);
         }
         serverQueue.songs.length = 1;
-        bot.queue.set(message.guild.id, serverQueue);
+        bot.musicQueues.set(message.guild.id, serverQueue);
         return message.channel.send(":stop_button:  Queue has been cleared!");
       }
       else {

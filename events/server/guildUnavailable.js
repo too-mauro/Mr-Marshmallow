@@ -3,10 +3,10 @@ This event runs whenever one of the servers the bot is on becomes unavailable.
 It sends a message to the log channel saying which server went offline.
 */
 
-const fs = require("fs");
-const { MessageEmbed } = require("discord.js");
-const { purple_dark } = require("../../config/bot/colors.json");
-const logChannel = JSON.parse(fs.readFileSync("./config/bot/settings.json", 'utf8')).channels.log;
+const {readFileSync} = require("fs");
+const {MessageEmbed} = require("discord.js");
+const {purple_dark} = require("../../config/bot/colors.json");
+const logChannel = JSON.parse(readFileSync("./config/bot/settings.json", "utf8")).channels.log;
 
 module.exports = async (bot, guild) => {
 
@@ -23,6 +23,10 @@ module.exports = async (bot, guild) => {
       .setThumbnail(guild.iconURL())
       .setFooter(`${bot.user.username}`, bot.user.displayAvatarURL());
 
-  try { bot.channels.cache.get(logChannel).send({embed}); }
-  catch (e) { console.log("Couldn't send the 'server unavailable' message to the log channel!\n", e); }
+  try {
+    bot.channels.cache.get(logChannel).send({embed});
+  }
+  catch (err) {
+    console.error("Couldn't send the \"server unavailable\" message to the log channel!\n", err);
+  }
 }

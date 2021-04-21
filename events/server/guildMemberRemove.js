@@ -4,7 +4,7 @@ channel set, and if both are true, checks if the user was banned. If so, this
 sends the ban message; otherwise, it sends the leave message set in the server's
 configuration file. */
 
-const fs = require("fs");
+const {readFileSync, writeFileSync} = require("fs");
 
 module.exports = async (bot, member) => {
 
@@ -12,7 +12,7 @@ module.exports = async (bot, member) => {
     if (member.user == bot.user) return;
 
     // get the server's current configurations
-    const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${member.guild.id}/config.json`, 'utf8'));
+    const serverConfig = JSON.parse(readFileSync(`./config/server/${member.guild.id}/config.json`, 'utf8'));
 
     // check if doormat is enabled for the server; if it's not, stop here
     if (!serverConfig.doormat.enabled) return;
@@ -22,7 +22,7 @@ module.exports = async (bot, member) => {
     let leaveChannel = member.guild.channels.cache.find(c => c.id === serverConfig.doormat.channelID);
     if (!leaveChannel) {
         serverConfig.doormat.channelID = null;
-        return fs.writeFileSync(`./config/server/${member.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
+        return writeFileSync(`./config/server/${member.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
     }
 
     /* Try to find the user in the ban logs if the bot has the "Ban Members" permission. If it doesn't or can't find the user,
@@ -33,10 +33,16 @@ module.exports = async (bot, member) => {
         /* If the user was found in the ban logs, send the ban message from the config file.
         Replace all 'username' and 'servername' references with member tag and server name, respectively. */
         let banMessage = serverConfig.doormat.banMessage;
-        banMessage = banMessage.replace(/username/g, `**${member.user.tag}**`).replace(/servername/g, `**${member.guild.name}**`);
+        banMessage = banMessage.replace(/<user>/g, `**${member.user.tag}**`).replace(/<server>/g, `**${member.guild.name}**`);
 
-        try { leaveChannel.send(banMessage); }
-        catch (e) { console.log(`Couldn't send the ban message in ${guild.name}!\n`, e); }
+        try {
+          if (member.guild.me.permissionsIn(leaveChannel).has("SEND_MESSAGES")) {
+            leaveChannel.send(banMessage);
+          }
+        }
+        catch (err) {
+          console.error(`Couldn't send the ban message in ${guild.name}!\n`, err);
+        }
         return;
       }
     }
@@ -45,8 +51,14 @@ module.exports = async (bot, member) => {
     leave message from the config file. Replace all 'username' and 'servername' references with member tag and server name,
     respectively. */
     let leaveMessage = serverConfig.doormat.leaveMessage;
-    leaveMessage = leaveMessage.replace(/username/g, `**${member.user.tag}**`).replace(/servername/g, `**${member.guild.name}**`);
+    leaveMessage = leaveMessage.replace(/<user>/g, `**${member.user.tag}**`).replace(/<server>/g, `**${member.guild.name}**`);
 
-    try { leaveChannel.send(leaveMessage); }
-    catch (e) { console.log(`Couldn't send the leave message in ${guild.name}!\n`, e); }
+    try {
+      if (member.guild.me.permissionsIn(leaveChannel).has("SEND_MESSAGES")) {
+        leaveChannel.send(leaveMessage);
+      }
+    }
+    catch (err) {
+      console.error(`Couldn't send the leave message in ${guild.name}!\n`, err);
+    }
 }

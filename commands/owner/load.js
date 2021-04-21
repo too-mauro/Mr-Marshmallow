@@ -1,53 +1,88 @@
-/*
-This command loads a new command into memory, and can only be executed by the
-bot owner defined in the config/bot/settings.json file.
-*/
+/* This command loads one or multiple new command(s) into the bot's command
+list, and can only be executed by the bot owner(s) defined in the
+config/bot/settings.json file. */
 
-const { owners } = require("../../config/bot/settings.json");
-const { getCategories } = require("../../config/bot/util.js");
-const { readdirSync } = require("fs");
+const {owners} = require("../../config/bot/settings.json");
+const {statSync, readdirSync} = require("fs");
 
 module.exports = {
     config: {
         name: "load",
-        description: "Loads a new bot command. Restricted to the bot owner.",
-        category: "owner",
+        description: "Loads one or more new bot commands. Restricted to the bot owner.",
         usage: "<command>",
-        aliases: []
+        aliases: ["l"],
+        category: "owner"
     },
     run: async (bot, message, args) => {
 
-      if (!owners.includes(message.author.id)) return message.channel.send(`**${message.author.username}**, you must be the bot owner to run this command.`);
+      if (!owners.includes(message.author.id)) {
+        return message.channel.send(`**${message.author.username}**, you must be the bot owner to run this command.`);
+      }
       else if (!args || args.length < 1) {
-        return message.channel.send(`**${message.author.username}**, please provide the full name of a new command to load! (Don't enter an alias.)`);
+        return message.channel.send(`**${message.author.username}**, please provide the full name of one or more new command to load! (Don't enter an alias.)`);
       }
 
-      args[0] = args[0].toLowerCase();
-      if (bot.commands.get(args[0]) || bot.commands.get(bot.aliases.get(args[0]))) {
-        return message.channel.send(`A command or alias with the name \`${args[0]}\` already exists!`);
-      }
+      let successfulLoads = [];
+      let failedLoads = [];
+      args.forEach(cmdToLoad => {
+          cmdToLoad = cmdToLoad.toLowerCase();
+          if (bot.commands.get(cmdToLoad) || bot.commands.get(bot.aliases.get(cmdToLoad))) {
+            console.error(`A command or alias with the name "${cmdToLoad}" already exists!`);
+            return failedLoads.push({command: cmdToLoad, reason: "command/alias already exists"});
+          }
 
-      let found = false;
-      try {
-        getCategories().forEach(dirs => {
-            const commands = readdirSync(`./commands/${dirs}/`).filter(d => d.endsWith('.js'));
-            for (let file of commands) {
-              if (found) return;
-              else if (file == `${args[0]}.js`) {
-                let pull = require(`../../commands/${dirs}/${file}`);
-                bot.commands.set(pull.config.name, pull);
-                if (pull.config.aliases) pull.config.aliases.forEach(a => bot.aliases.set(a, pull.config.name));
-                delete require.cache[require.resolve(`../../commands/${dirs}/${file}`)];
-                return found = true;
+          let found = false;
+          try {
+            readdirSync("./commands/").forEach(dir => {
+              if (statSync(`./commands/${dir}/`).isDirectory()) {
+                let commandList = readdirSync(`./commands/${dir}/`).filter(d => d.endsWith('.js'));
+                for (let file of commandList) {
+                  if (found) return;
+                  else if (file == `${cmdToLoad}.js`) {
+                    let command = require(`../../commands/${dir}/${file}`);
+                    bot.commands.set(command.config.name, command);
+                    if (command.config.aliases) {
+                      command.config.aliases.forEach(alias => {
+                        bot.aliases.set(alias, command.config.name);
+                      });
+                    }
+                    delete require.cache[require.resolve(`../../commands/${dir}/${file}`)];
+                    console.log(`Successfully loaded the "${command.config.name}" command.`);
+                    successfulLoads.push(command.config.name);
+                    found = true;
+                    break;
+                  }
+                }
               }
+            });
+
+            if (!found) {
+              console.error(`Could not find the "${cmdToLoad}" command!`);
+              return failedLoads.push({command: cmdToLoad, reason: "command could not be found"});
             }
-        });
+          }
+          catch (err) {
+            console.error(`Couldn't load the "${cmdToLoad}" command! ${err.message}`);
+            failedLoads.push({command: cmdToLoad, reason: err.message});
+          }
+      });
+
+      let result;
+      let errorMsgs = "";
+      for (let f = 0; f < failedLoads.length; f++) {
+        errorMsgs += `${failedLoads[f].command}: ${failedLoads[f].reason}\n`;
       }
-      catch (e) {
-        console.log(e);
-        return message.channel.send(`Couldn't load the \`${args[0]}\` command.\n\`\`\`ERROR: ${e.message}\`\`\``);
+
+      if (successfulLoads.length > 0 && failedLoads.length < 1) {
+        result = `Successfully loaded ${successfulLoads.length} command(s): \`${successfulLoads.join(", ")}\``;
       }
-      if (!found) return message.channel.send(`A command with the name \`${args[0]}\` could not be found!`);
-      else return message.channel.send(`Successfully loaded the \`${args[0]}\` command!`);
+      else if (successfulLoads.length > 0 && failedLoads.length > 0) {
+        result = `Successfully loaded ${successfulLoads.length} command(s): \`${successfulLoads.join(", ")}\`\nFailed to load ${failedLoads.length} command(s): \`\`\`${errorMsgs}\`\`\``;
+      }
+      else {
+        result = `Failed to load ${failedLoads.length} command(s): \`\`\`${errorMsgs}\`\`\``;
+      }
+      return message.channel.send(result);
+
     }
 }

@@ -1,16 +1,69 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.10
+### Major Updates
+- Game updates
+  - `riddle` command has been removed, could not be implemented
+  - Quality-of-life `trivia` updates
+    - Multiple winners are now shown in the event of a tie (instead of just one)
+    - Trivia can now be played on multiple servers simultaneously
+    - New Challenge Mode! Each wrong answer subtracts the question's point count
+    - Trivia hosts now have the option to play a new game with the same roster/settings after a game ends
+    - Solo games can be started instantly with `trivia start` without having to create a lobby first
+  - New `games` command to handle settings for game commands, including default Challenge Mode setting
+- Music command updates
+  - Users can now vote to skip a currently playing song! Enable it in the new `vote` setting in the `music` command
+    - Song skip voting does not occur if there is only one person in a voice channel when enabled
+  - `skip` now skips the currently playing song if it's the only song in queue
+  - Now possible to remove multiple songs from the music queue at once
+  - `repeat` command now repeats the current song by default
+- New commands
+  - New `chain` game! Repeat a word or phrase as many times as you can in one minute!
+  - New `battle` game! Go against another server member in a turn-based RPG battle!
+  - `mock` command: NoW YoU CaN UsE TeXt lIkE ThIs!
+  - `horoscope` command: get daily horoscopes based on your star sign!
+- Other/Misc.
+  - `dab` now rates your dab from 1-10, where 10 is very stylish
+  - Configuration settings now automatically generated for servers that added the bot while offline at startup
+  - Now possible to load, unload, or reload multiple bot commands at once
+  - Changed "**username**" and "**servername**" variables in settings commands to **<user>** and **<server>** respectively
+  - New **<rules>** variable added to mention server's rules channel in welcome message (if server has one set)
+
+### Minor Updates
+- Updated and unified word checker function, now part of the bot's "util" file
+- Shortened time for reactions to register changing pages when viewing a server's music queue (6 mins to 3 mins)
+- Moved playlist "Last updated" text to the embed's footer (or bottom of message if embeds are disabled)
+- Added more information to "added to queue" messages for songs and playlists
+- Welcome, leave, and ban messages now previewed in `doormat` command when using `welcome`, `leave`, or `ban` arguments respectively
+- Updated response message for `roll` command
+- Updated text in the settings commands and removed redundant text
+- Updated emotes within certain commands (`8ball`, `dab`, etc.)
+- Updated bot's startup message variable from "vX" to **<version>**
+- Bot now gets destroyed before quitting server in `shutdown` command
+- Package updates
+  - `discord.js` upgraded to v12.5.3
+  - `@discordjs/opus` upgraded to v0.5
+  - `ffmpeg-static` upgraded to v4.3
+  - `yt-search` upgraded to v2.8
+  - `ytpl` upgraded to v2.1.1
+  - `ytdl-core` upgraded to v4.5
+  - `graceful-fs` package removed (went unused)
+
+### Bug-fixes
+- Changed reaction filter to allow anyone to change quote and music queue pages in `quote` and `queue` commands respectively
+- Fixed the restricted word filter to delete messages with whole-word restricted words (instead of partial word filtering)
+
 ## v0.9.5
 ### Minor Updates
 - Added when a playlist was last updated when added to the queue
 - Implemented a switch to use different audio quality for live/pre-recorded videos
 - Updated a few dependency packages
-  - `@discordjs/opus` bumped to v0.4.0
-  - `graceful-fs` bumped to v4.2.6
-  - `yt-search` bumped to v2.7.3
-  - `ytdl-core` bumped to v4.4.5
-  - `ytpl` bumped to v2.0.5
+  - `@discordjs/opus` upgraded to v0.4.0
+  - `graceful-fs` upgraded to v4.2.6
+  - `yt-search` upgraded to v2.7.3
+  - `ytdl-core` upgraded to v4.4.5
+  - `ytpl` upgraded to v2.0.5
 ### Bug-fixes
 - Fixed a "No such format found: 95" error while trying to play non-live songs
 - Fixed an issue with displaying song count when loading a playlist

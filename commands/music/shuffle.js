@@ -3,10 +3,10 @@
 module.exports = {
     config: {
         name: "shuffle",
-        aliases: ["sh"],
+        description: "Shuffle the queue.",
         usage: "",
-        category: "music",
-        description: "Shuffle the queue."
+        aliases: ["sh"],
+        category: "music"
     },
     run: async (bot, message, args) => {
 
@@ -18,24 +18,25 @@ module.exports = {
         return message.channel.send(`**${message.author.username}**, you need to be in the same voice channel to use this command!`);
       }
 
-      const serverQueue = bot.queue.get(message.guild.id);
+      const serverQueue = bot.musicQueues.get(message.guild.id);
       if (!serverQueue) {
         return message.channel.send(`**${message.author.username}**, there's nothing playing right now!`);
       }
       else if (serverQueue.textChannel !== message.channel) {
         return message.channel.send(`Sorry **${message.author.username}**, I'm bound to ${serverQueue.textChannel} right now!`);
       }
-
-      let songs = serverQueue.songs;
-      if (songs.length - 1 > 0) {   // <-- the -1 is to account for the currently playing song
-        for (let i = songs.length - 1; i > 1; i--) {
+      else if (serverQueue.songs.length - 1 < 1) {   // <-- the -1 is to account for the currently playing song
+        return message.channel.send(`**${message.author.username}**, there are no songs to shuffle!`);
+      }
+      else {
+        let songs = serverQueue.songs;
+        songs.forEach((song, i) => {
+          if (i < 1) return; // don't shuffle currently playing song
           let j = 1 + Math.floor(Math.random() * i);
-          [songs[i], songs[j]] = [songs[j], songs[i]];
-        }
+          [song, songs[j]] = [songs[j], song];
+        });
         serverQueue.songs = songs;
-        bot.queue.set(message.guild.id, serverQueue);
         return message.channel.send(":twisted_rightwards_arrows:  Shuffled!");
       }
-      return message.channel.send(`**${message.author.username}**, there are no songs to shuffle!`);
     }
 }

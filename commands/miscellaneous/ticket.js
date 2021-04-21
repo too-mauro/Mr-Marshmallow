@@ -2,8 +2,8 @@
 This command allows users to send suggestions or errors to the bot developer.
 */
 
-const fs = require("fs");
-const botTicketChannel = JSON.parse(fs.readFileSync("./config/bot/settings.json", "utf8")).channels.ticket;
+const {readFileSync} = require("fs");
+const botTicketChannel = JSON.parse(readFileSync("./config/bot/settings.json", "utf8")).channels.ticket;
 
 module.exports = {
   config: {
@@ -27,8 +27,8 @@ module.exports = {
       return message.channel.send("Whoops! We couldn't send your request...!");
     }
 
-    if (message.attachments.first()) {
-      tChannel.send(`---\n**${message.author.tag}**:\n` + text, {files: [message.attachments.first().url]});
+    if (message.attachments.size > 0) {
+      tChannel.send(`---\n**${message.author.tag}**:\n` + text, {files: message.attachments.map(a => a.url)});
     }
     else {
       tChannel.send(`---\n**${message.author.tag}**:\n` + text);

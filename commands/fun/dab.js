@@ -4,20 +4,20 @@ With one, the user can dab on another user EarthBound-style, and, with luck and 
 trusty random number generator, they can output up to 1000 damage!
 */
 
-const { getUserFromMention } = require("../../config/bot/util.js");
+const {getUserFromMention} = require("../../config/bot/util.js");
 
 module.exports = {
   config: {
       name: "dab",
       description: "Get the bot to dab or dab on someone!",
       usage: "(@mention)",
-      category: "fun",
-      aliases: ["d"]
+      aliases: ["d"],
+      category: "fun"
   },
   run: async (bot, message, args) => {
 
     // If there is no argument, just give the user a regular dab.
-    const dabEmote = "<:marshDab:648374543005777950>";
+    const dabEmote = "<:marshDab:830943246032830479>";
     if (!args || args.length < 1) {
       if (message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES")) {
         return message.channel.send({files: ["./config/bot/media/marshDab.png"]});
@@ -30,20 +30,19 @@ module.exports = {
     if (!member) {
   	   return message.channel.send(`**${message.author.username}**, you need to mention a user properly to dab on them!`);
     }
-
-    // If the person decides to mention themself, replace the second mention with the word "themself".
-    if (member.user == message.author) { member = "themself"; }
-
-    const attackDamage = Math.floor(Math.random() * (Math.floor(1000) - Math.ceil(1) + 1) ) + Math.ceil(1);
-    const battleMessage = `• ${message.author} tried dabbing on ${member}! ${dabEmote}`;
-    let customText;
-
-    if (attackDamage <= 25) { customText = `• It had no effect!`; }
-    else if (attackDamage <= 100) { customText = `• **${attackDamage} HP** of damage!`; }
-    else if (attackDamage <= 450) { customText = `• Oh, baby!\n• **${attackDamage} HP** of damage!`; }
-    else if (attackDamage <= 750) { customText = `• *WOWZA!*\n• **${attackDamage} HP** of damage!`; }
-    else { customText = `• ***SMAAAASH!!***\n• A whoppin' **${attackDamage} HP** of mortal damage!`; }
-
-    return message.channel.send(`${battleMessage}\n${customText}`);
+    else if (member.user == message.author) member = "themself"; // change second mention if user mentions self
+    return message.channel.send(`• ${message.author} dabbed on ${member}! ${dabEmote}\n• ${getRating()}`);
   }
+}
+
+function getRating() {
+  let number = Math.floor(Math.random() * (Math.floor(10) - Math.ceil(1) + 1)) + Math.ceil(1);
+  let rating = "";
+  if (number < 3) rating = "Yikes, pretty sloppy!"; // rating of 1 or 2
+  else if (number < 5) rating = "That was, er, something..."; // rating of 3 or 4
+  else if (number < 7) rating = "Not bad, but I think you could use an improvement."; // rating of 5 or 6
+  else if (number < 9) rating = "OK, that was pretty good. I like it!"; // rating of 7 or 8
+  else rating = "Wow, very stylish!"; // rating of 9 or 10
+
+  return rating + ` (you got a ${number}/10)`;
 }

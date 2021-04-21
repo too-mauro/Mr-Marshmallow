@@ -2,19 +2,21 @@
 	"owners": ["309411734081372162"],
 	"defaults": {
 		"prefix": "m!",
-		"joinMessage": "Hiya username, welcome to servername!",
-		"leaveMessage": "Looks like username just left. See ya later!",
-		"banMessage": "username got banned from the server!",
+		"joinMessage": "Hiya <user>, welcome to <server>!",
+		"leaveMessage": "Looks like <user> just left. See ya later!",
+		"banMessage": "<user> got banned from the server!",
 		"pinMode": "democratic",
 		"pinThreshold": 5,
 		"maxQuotes": 300,
 		"maxDenyListSize": 50,
-		"warnMessage": "Nice try username, but you're not allowed to say that. <:marshMad:696122820907761705>",
+		"maxLobbyPlayers": 10,
+		"maxLobbyRounds": 15,
+		"warnMessage": "Nice try <user>, but you're not allowed to say that. <:marshMad:833406243121004544>",
 		"warnType": "channel"
 	},
-	"startup": {
+	"startupNotice": {
 		"enabled": true,
-		"message": "Mr. Marshmallow vX is online and ready!"
+		"message": "Mr. Marshmallow <version> is online and ready!"
 	},
 	"channels": {
 		"log": "566792124100771881",

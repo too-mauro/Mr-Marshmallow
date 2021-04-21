@@ -1,41 +1,61 @@
-/*
-This command unloads a given command from memory, and can only be executed by
-the bot owner defined in the config/bot/settings.json file.
-*/
+/* This command unloads one or more given command(s) from memory, and can only
+be executed by the bot owner(s) defined in the config/bot/settings.json file. */
 
-const { owners } = require("../../config/bot/settings.json");
-const { readdirSync } = require("fs");
+const {owners} = require("../../config/bot/settings.json");
 
 module.exports = {
     config: {
         name: "unload",
-        description: "Unloads a bot command. Restricted to the bot owner.",
-        category: "owner",
+        description: "Unloads one or more bot commands. Restricted to the bot owner.",
         usage: "<command>",
-        aliases: ["unl", "ul"]
+        aliases: ["ul"],
+        category: "owner"
     },
     run: async (bot, message, args) => {
 
-      if (!owners.includes(message.author.id)) return message.channel.send(`**${message.author.username}**, you must be the bot owner to run this command.`);
-
-      if (!args || args.length < 1) {
-        return message.channel.send(`**${message.author.username}**, please provide a command to unload!`);
+      if (!owners.includes(message.author.id)) {
+        return message.channel.send(`**${message.author.username}**, you must be the bot owner to run this command.`);
+      }
+      else if (!args || args.length < 1) {
+        return message.channel.send(`**${message.author.username}**, please provide one or more commands to unload!`);
       }
 
-      args[0] = args[0].toLowerCase();
-      let command = bot.commands.get(args[0]) || bot.commands.get(bot.aliases.get(args[0]));
-      if (!command) {
-        return message.channel.send(`A command or alias with the name \`${args[0]}\` doesn't exist!`);
+      let successfulUnloads = [];
+      let failedUnloads = [];
+      args.forEach(cmdToUnload => {
+          cmdToUnload = cmdToUnload.toLowerCase();
+          let command = bot.commands.get(cmdToUnload) || bot.commands.get(bot.aliases.get(cmdToUnload));
+          if (!command) {
+            console.error(`A command or alias with the name "${cmdToUnload}" doesn't exist!`);
+            return failedUnloads.push({command: cmdToUnload, reason: "command/alias does not exist"});
+          }
+
+          try {
+            bot.commands.delete(command.config.name);
+            console.log(`Successfully unloaded the "${command.config.name}" command.`);
+            successfulUnloads.push(command.config.name);
+          }
+          catch (err) {
+            console.error(`Couldn't unload the "${cmdToLoad}" command!`, err.message);
+            failedUnloads.push({command: cmdToUnload, reason: err.message});
+          }
+      });
+
+      let result;
+      let errorMsgs = "";
+      for (let f = 0; f < failedUnloads.length; f++) {
+        errorMsgs += `${failedUnloads[f].command}: ${failedUnloads[f].reason}\n`;
       }
 
-      try {
-        bot.commands.delete(command.config.name);
+      if (successfulUnloads.length > 0 && failedUnloads.length < 1) {
+        result = `Successfully unloaded ${successfulUnloads.length} command(s): \`${successfulUnloads.join(", ")}\``;
       }
-      catch(e) {
-          console.log(e);
-          return message.channel.send(`Couldn't unload the \`${command.config.name}\` command.\n\`\`\`ERROR: ${e.message}\`\`\``);
+      else if (successfulUnloads.length > 0 && failedUnloads.length > 0) {
+        result = `Successfully unloaded ${successfulUnloads.length} command(s): \`${successfulUnloads.join(", ")}\`\nFailed to unload ${failedUnloads.length} command(s): \`\`\`${errorMsgs}\`\`\``;
       }
-
-      return message.channel.send(`Successfully unloaded the \`${command.config.name}\` command!`);
+      else {
+        result = `Failed to unload ${failedUnloads.length} command(s): \`\`\`${errorMsgs}\`\`\``;
+      }
+      return message.channel.send(result);
     }
 }

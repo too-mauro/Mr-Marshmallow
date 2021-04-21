@@ -7,9 +7,9 @@ than the server's pin threshold. If the message is already in the corkboard, the
 this will update the number of pins the post received to reflect the original post's.
 */
 
-const fs = require('fs');
-const { MessageEmbed } = require("discord.js");
-const { extension } = require("../../config/bot/util.js");
+const {readFileSync, writeFileSync} = require("fs");
+const {MessageEmbed} = require("discord.js");
+const {extension} = require("../../config/bot/util.js");
 
 module.exports = async (bot, reaction, user) => {
 
@@ -17,7 +17,7 @@ module.exports = async (bot, reaction, user) => {
     if (message.channel.type == "dm") return;
 
     // check if the CorkBoard and Democratic Pin Mode is enabled for the server; if it's not, stop here
-    const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, 'utf8'));
+    const serverConfig = JSON.parse(readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8"));
     if (!serverConfig.corkboard.enabled) return;
     else if (serverConfig.corkboard.pinMode == "instapin") return;
 
@@ -32,7 +32,7 @@ module.exports = async (bot, reaction, user) => {
     }
 
     // Check if the channel is on the server's CorkBoard blacklist. If it is, stop here.
-    const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/denylist.json`, 'utf8'));
+    const serverDenyList = JSON.parse(readFileSync(`./config/server/${message.guild.id}/denylist.json`, "utf8"));
     if (serverDenyList.corkboard.includes(message.channel.id)) return message.channel.send("Sorry, this channel has been restricted from pinning posts to the CorkBoard.");
 
     // Check if channel is NSFW and whether the server allows NSFW pins. If the channel is NSFW and
@@ -44,7 +44,7 @@ module.exports = async (bot, reaction, user) => {
     let pinChannel = message.guild.channels.cache.find(c => c.id === serverConfig.corkboard.channelID);
     if (!pinChannel) {
         serverConfig.corkboard.channelID = null;
-        return fs.writeFile(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
+        return writeFileSync(`./config/server/${message.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), "utf8");
     }
 
     // look for pinned messages already in the corkboard channel with the message's ID. The try-catch block is necessary in case there are non-embed messages in the CorkBoard channel.
@@ -53,8 +53,8 @@ module.exports = async (bot, reaction, user) => {
     try {
       pins = fetchedMessages.find(m => m.embeds[0].footer.text.endsWith(message.id));
     }
-    catch (e) {
-      console.log(e);
+    catch (err) {
+      console.error(err);
       message.channel.send(`Couldn't find the original pinned message in <#${serverConfig.corkboard.channelID}>! Are there any non-embed messages in there...?`);
     }
 

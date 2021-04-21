@@ -1,44 +1,70 @@
-/*
-This command reloads a given command, and can only be executed by the bot owner
-defined in the config/bot/settings.json file.
-*/
+/* This command reloads one or multiple commands, and can only be executed by the
+bot owner(s) defined in the config/bot/settings.json file. */
 
-const { owners } = require("../../config/bot/settings.json");
-const { readdirSync } = require("fs");
+const {owners} = require("../../config/bot/settings.json");
 
 module.exports = {
     config: {
         name: "reload",
-        description: "Reloads a bot command. Restricted to the bot owner.",
-        category: "owner",
+        description: "Reloads one or more bot commands. Restricted to the bot owner.",
         usage: "<command>",
-        aliases: ["creload", "rel"]
+        aliases: ["rel"],
+        category: "owner"
     },
     run: async (bot, message, args) => {
 
-      if (!owners.includes(message.author.id)) return message.channel.send(`**${message.author.username}**, you must be the bot owner to run this command.`);
+      if (!owners.includes(message.author.id)) {
+        return message.channel.send(`**${message.author.username}**, you must be the bot owner to run this command.`);
+      }
       else if (!args || args.length < 1) {
-        return message.channel.send(`**${message.author.username}**, please provide a command to reload!`);
+        return message.channel.send(`**${message.author.username}**, please provide one or more commands to reload!`);
       }
 
-      args[0] = args[0].toLowerCase();
-      let command = bot.commands.get(args[0]) || bot.commands.get(bot.aliases.get(args[0]));
-      if (!command) {
-        return message.channel.send(`A command or alias with the name \`${args[0]}\` doesn't exist!`);
+      let successfulReloads = [];
+      let failedReloads = [];
+      args.forEach(cmdToReload => {
+          cmdToReload = cmdToReload.toLowerCase();
+          let loadedCommand = bot.commands.get(cmdToReload) || bot.commands.get(bot.aliases.get(cmdToReload));
+          if (!loadedCommand) {
+            console.error(`A command or alias with the name "${cmdToReload}" doesn't exist!`);
+            return failedReloads.push({command: cmdToReload, reason: "command/alias does not exist"});
+          }
+
+          try {
+            bot.commands.delete(loadedCommand.config.name);
+            let reloadedCommand = require(`../${loadedCommand.config.category}/${loadedCommand.config.name}.js`);
+            bot.commands.set(reloadedCommand.config.name, reloadedCommand);
+            if (reloadedCommand.config.aliases) {
+              reloadedCommand.config.aliases.forEach(alias => {
+                bot.aliases.set(alias, reloadedCommand.config.name);
+              });
+            }
+            delete require.cache[require.resolve(`../${loadedCommand.config.category}/${loadedCommand.config.name}.js`)];
+            console.log(`Successfully reloaded the "${reloadedCommand.config.name}" command.`);
+            successfulReloads.push(reloadedCommand.config.name);
+          }
+          catch (err) {
+            console.error(`Couldn't reload the "${cmdToReload}" command!`, err.message);
+            return failedReloads.push({command: cmdToReload, reason: err.message});
+          }
+      });
+
+      let result;
+      let errorMsgs = "";
+      for (let f = 0; f < failedReloads.length; f++) {
+        errorMsgs += `${failedReloads[f].command}: ${failedReloads[f].reason}\n`;
       }
 
-      bot.commands.delete(command.config.name);
-      try {
-        let pull = require(`../${command.config.category}/${command.config.name}.js`);
-        bot.commands.set(pull.config.name, pull);
-        if (pull.config.aliases) pull.config.aliases.forEach(a => bot.aliases.set(a, pull.config.name));
-        delete require.cache[require.resolve(`../${command.config.category}/${command.config.name}.js`)];
+      if (successfulReloads.length > 0 && failedReloads.length < 1) {
+        result = `Successfully reloaded ${successfulReloads.length} command(s): \`${successfulReloads.join(", ")}\``;
       }
-      catch(e) {
-          console.log(e);
-          return message.channel.send(`Couldn't reload the \`${command.config.name}\` command.\n\`\`\`ERROR: ${e.message}\`\`\``);
+      else if (successfulReloads.length > 0 && failedReloads.length > 0) {
+        result = `Successfully reloaded ${successfulReloads.length} command(s): \`${successfulReloads.join(", ")}\`\nFailed to reload ${failedReloads.length} command(s): \`\`\`${errorMsgs}\`\`\``;
       }
+      else {
+        result = `Failed to reload ${failedReloads.length} command(s): \`\`\`${errorMsgs}\`\`\``;
+      }
+      return message.channel.send(result);
 
-      return message.channel.send(`Successfully reloaded the \`${command.config.name}\` command!`);
     }
 }

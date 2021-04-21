@@ -1,16 +1,16 @@
 /* This command shows the currently playing song, if one's playing. */
 
-const fs = require("fs");
-const { MessageEmbed } = require("discord.js");
-const { blue_dark } = require("../../config/bot/colors.json");
+const {readFileSync} = require("fs");
+const {MessageEmbed} = require("discord.js");
+const {blue_dark} = require("../../config/bot/colors.json");
 
 module.exports = {
     config: {
         name: "nowplaying",
-        aliases: ["np"],
+        description: "Shows the currently playing song.",
         usage: "",
-        category: "music",
-        description: "Shows the currently playing song."
+        aliases: ["np"],
+        category: "music"
     },
     run: async (bot, message, args) => {
 
@@ -19,7 +19,7 @@ module.exports = {
         return message.channel.send(`**${message.author.username}**, you need to be in a voice channel to use this command!`);
       }
 
-      const serverQueue = bot.queue.get(message.guild.id);
+      const serverQueue = bot.musicQueues.get(message.guild.id);
       if (!serverQueue) {
         return message.channel.send(`**${message.author.username}**, there's nothing playing right now!`);
       }
@@ -27,7 +27,7 @@ module.exports = {
         return message.channel.send(`Sorry **${message.author.username}**, I'm bound to ${serverQueue.textChannel} right now!`);
       }
       const song = serverQueue.songs[0];
-      const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json` ,"utf8"));
+      const serverConfig = JSON.parse(readFileSync(`./config/server/${message.guild.id}/config.json` ,"utf8"));
       if (serverConfig.music.embedEnabled) {
         const embed = new MessageEmbed()
           .setColor(blue_dark)

@@ -2,21 +2,21 @@
 is added to the end. Otherwise, the bot joins the voice channel (if not already in one) and starts playing
 the requested music. */
 
-const fs = require("fs");
-const ytdl = require("ytdl-core");
+const {readFileSync} = require("fs");
+const {validateURL, getInfo} = require("ytdl-core");
 const yts = require("yt-search");
 const ytpl = require("ytpl");
-const { playSong, secondsToTime } = require("../../config/bot/util.js");
-const { MessageEmbed } = require("discord.js");
-const { blue_dark } = require("../../config/bot/colors.json");
+const {playSong, secondsToTime} = require("../../config/bot/util.js");
+const {MessageEmbed} = require("discord.js");
+const {blue_dark} = require("../../config/bot/colors.json");
 
 module.exports = {
     config: {
         name: "play",
-        aliases: ["p"],
+        description: "Play a song or playlist, or find something to play!",
         usage: "<song search or link>",
-        category: "music",
-        description: "Play a song or playlist, or find something to play!"
+        aliases: ["p"],
+        category: "music"
     },
     run: async (bot, message, args) => {
 
@@ -43,10 +43,10 @@ module.exports = {
         return message.channel.send(`**${message.author.username}**, please enter a link or a query to search!`);
       }
 
-      const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8"));
+      const serverConfig = JSON.parse(readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8"));
       let query = args.join(" ");
       let song = null;
-      const serverQueue = bot.queue.get(message.guild.id);
+      const serverQueue = bot.musicQueues.get(message.guild.id);
       const queueConstruct = {
         textChannel: message.channel,
         voiceChannel: message.member.voice.channel,
@@ -55,8 +55,8 @@ module.exports = {
         queueLoop: false,
         songLoop: false,
         totalLength: 0,
-        volume: 100,
-        playing: true
+        playing: true,
+        votersToSkip: []
       };
 
       // Check if the bot's currently bound to a certain text channel for songs.
@@ -69,10 +69,10 @@ module.exports = {
         query = query.slice(1, query.length - 1);
       }
 
-      if (ytdl.validateURL(query)) {
+      if (validateURL(query)) {
         // If the user enters a valid URL, add it to queue.
         try {
-          let songInfo = await ytdl.getInfo(query);
+          let songInfo = await getInfo(query);
           let details = songInfo.player_response.videoDetails;
           if (!details.isLive && longVideo(details.lengthSeconds)) {
             return message.channel.send(`Sorry, I couldn't add ${songInfo.playerResponse.videoDetails.title} because it's longer than 3 hours.`);
@@ -87,26 +87,25 @@ module.exports = {
           };
         }
         catch (err) {
-          console.log(err);
+          console.error(err);
           return message.channel.send(`Sorry, **${message.author.username}**, I couldn't add the song! Maybe it's a private video or deleted...?`);
         }
       }
       else if (ytpl.validateID(query)) {
         // if this is a playlist, get every item and add to queue
         let playlist = await ytpl(query, { limit: Infinity });
-        for (let p = 0; p < playlist.items.length; p++) {
+        playlist.items.forEach(entry => {
           // live videos return a null duration
-          if (!playlist.items[p].isLive && longVideo(playlist.items[p].duration)) {
-            message.channel.send(`Sorry, I couldn't add ${playlist.items[p].title} because it's longer than 3 hours.`);
-            continue;
+          if (!entry.isLive && longVideo(entry.duration)) {
+            return message.channel.send(`Sorry, I couldn't add ${entry.title} because it's longer than 3 hours.`);
           }
           try {
             song = {
-              title: playlist.items[p].title,
-              url: playlist.items[p].url,
-              duration: playlist.items[p].duration ? playlist.items[p].duration : "LIVE",
-              queueDuration: playlist.items[p].duration ? timeToSeconds(playlist.items[p].duration) : 0,
-              thumbnail: playlist.items[p].thumbnails[0].url,
+              title: entry.title,
+              url: entry.url,
+              duration: entry.duration ? entry.duration : "LIVE",
+              queueDuration: entry.duration ? timeToSeconds(entry.duration) : 0,
+              thumbnail: entry.thumbnails[0].url,
               requester: message.member.nickname ? `${message.member.nickname} (${message.author.tag})` : message.author.tag
             };
 
@@ -120,29 +119,31 @@ module.exports = {
             }
           }
           catch (err) {
-            console.log(err);
+            console.error(err);
             message.channel.send("Sorry, I couldn't add a song! Perhaps it's private or deleted...?");
           }
-        }
+        });
 
         if (serverConfig.music.embedEnabled) {
           const embed = new MessageEmbed()
             .setColor(blue_dark)
             .setTitle("Added to Queue")
             .setDescription(`[${playlist.title}](${playlist.url})`)
-            .addField("Description", playlist.description ? playlist.description : "None available.", false)
+            .addField("Description", playlist.description ? playlist.description : "No description available.", false)
             .addField("View Count", playlist.views, true)
-            .addField("Last Updated", playlist.lastUpdated, true)
-            .addField("Song Count", playlist.estimatedItemCount, false)
-            .setThumbnail(playlist.thumbnails[0].url);
+            .addField("\u200b", "\u200b", true)
+            .addField("Song Count", playlist.estimatedItemCount, true)
+            .addField("Requested by", message.member.nickname ? `${message.member.nickname} (${message.author.tag})` : message.author.tag, true)
+            .setThumbnail(playlist.thumbnails[0].url)
+            .setFooter(playlist.lastUpdated);
           message.channel.send({embed});
         }
         else {
-          message.channel.send(`**Added to Queue**\n${playlist.title} (${playlist.url})\n**Description:** ${playlist.description ? playlist.description : "None available."}\n**View Count:** ${playlist.views}\n**Last Updated:** ${playlist.lastUpdated}\n**Song Count:** ${playlist.estimatedItemCount}`);
+          message.channel.send(`**Added to Queue**\n${playlist.title} (${playlist.url})\n**Description:** ${playlist.description ? playlist.description : "None available."}\n**View Count:** ${playlist.views}\n**Song Count:** ${playlist.estimatedItemCount}\n${playlist.lastUpdated}`);
         }
 
         if (!serverQueue) {
-          bot.queue.set(message.guild.id, queueConstruct);
+          bot.musicQueues.set(message.guild.id, queueConstruct);
           try {
             if (message.guild.me.voice.channel) {
               message.channel.send(`Now taking more requests in ${queueConstruct.textChannel}!`);
@@ -155,13 +156,12 @@ module.exports = {
           }
           catch (error) {
             console.error(error);
-            bot.queue.delete(message.guild.id);
+            bot.musicQueues.delete(message.guild.id);
             await queueConstruct.voiceChannel.leave();
             return message.channel.send(`Could not join the channel: ${error}`).catch(console.error);
           }
         }
         return;
-
       }
       else {
         // Find the first video from the search query.
@@ -185,7 +185,7 @@ module.exports = {
           };
         }
         catch (err) {
-          console.log(err);
+          console.error(err);
           return message.channel.send(`Sorry, **${message.author.username}**, I couldn't add the song! Maybe the one I found is a private video or deleted...?`);
         }
       }
@@ -198,20 +198,21 @@ module.exports = {
             .setColor(blue_dark)
             .setTitle("Added to Queue")
             .setDescription(`[${song.title}](${song.url})`)
-            .addField("Length", song.duration, true)
+            .addField("Song Duration", song.duration, true)
+            .addField("Requested by", song.requester, true)
+            .addField("Position in Queue", serverQueue.songs.length - 1, true)
+            .addField("Estimated Time Until Play", secondsToTime(serverQueue.totalLength))
             .setThumbnail(song.thumbnail);
           return message.channel.send({embed});
         }
         else {
-          return message.channel.send(`**Added to Queue**
-          ${song.title}
-          **Length:** ${song.duration}`);
+          return message.channel.send(`**Added to Queue**\n${song.title}\n**Song Duration:** ${song.duration}\n**Requested by:** ${song.requester}\n**Position in Queue**: ${serverQueue.songs.length - 1}\n**Estimated Time Until Play**: ${secondsToTime(serverQueue.totalLength)}`);
         }
       }
       else {
         queueConstruct.songs.push(song);
         queueConstruct.totalLength = song.queueDuration; // <-- there's nothing here, so make the total length the song's length
-        bot.queue.set(message.guild.id, queueConstruct);
+        bot.musicQueues.set(message.guild.id, queueConstruct);
 
         try {
           if (message.guild.me.voice.channel) {
@@ -226,13 +227,13 @@ module.exports = {
             if (serverConfig.music.channelTopicChangeEnabled) {
               queueConstruct.textChannel.setTopic("Nothing's playing in here right now...").catch(console.error);
             }
-            bot.queue.delete(message.guild.id);
+            bot.musicQueues.delete(message.guild.id);
           });
           playSong(bot, queueConstruct.songs[0], message);
         }
         catch (error) {
           console.error(error);
-          bot.queue.delete(message.guild.id);
+          bot.musicQueues.delete(message.guild.id);
           await queueConstruct.voiceChannel.leave();
           return message.channel.send(`Could not join the channel: ${error}`).catch(console.error);
         }
@@ -242,16 +243,12 @@ module.exports = {
 }
 
 function timeToSeconds(videoDuration) {
-  // This assumes an array of three numbers separated with a colon (the format is H:M:S).
-  // Grab the hours and multiply it by 3600 (hours to minutes, then minutes to seconds).
-  // Then, get the minutes and multiply by 60 (minutes to seconds).
-  // Lastly, add the seconds which already exist.
+  /* Assumes a string that includes at least one semi-colon (:). Splits it into an
+  array and multiplies every split entry by a power of 60. */
+  if (!videoDuration.includes(":")) return videoDuration;
   let seconds = 0;
   const timeArray = videoDuration.split(":").reverse();
-  timeArray[0] = parseInt(timeArray[0]);
-  if (timeArray[1]) { timeArray[1] = parseInt(timeArray[1]) * 60; }
-  if (timeArray[2]) { timeArray[2] = parseInt(timeArray[2]) * 3600; }
-  for (let i = 0; i < timeArray.length; i++) { seconds += timeArray[i]; };
+  timeArray.forEach((time, exp) => seconds += parseInt(time) * Math.pow(60, exp));
   return seconds;
 }
 

@@ -6,9 +6,9 @@ that server has "Insta-Pin Mode" on. If a channel doesn't have any pins, this ev
 will not return anything.
 */
 
-const fs = require("fs");
-const { MessageEmbed } = require("discord.js");
-const { extension } = require("../../config/bot/util.js");
+const {readFileSync, writeFileSync} = require("fs");
+const {MessageEmbed} = require("discord.js");
+const {extension} = require("../../config/bot/util.js");
 
 module.exports = async (bot, channel, time) => {
 
@@ -17,7 +17,7 @@ module.exports = async (bot, channel, time) => {
 
     // Get server's config data with channel.guild.id and use the ID in the file path
     // check if the CorkBoard and Insta-Pin Mode is enabled for the server; if it's not, stop here
-    const serverConfig = JSON.parse(fs.readFileSync(`./config/server/${channel.guild.id}/config.json`, 'utf8'));
+    const serverConfig = JSON.parse(readFileSync(`./config/server/${channel.guild.id}/config.json`, 'utf8'));
     if (!serverConfig.corkboard.enabled) return;
     else if (serverConfig.corkboard.pinMode == "democratic") return;
 
@@ -26,7 +26,7 @@ module.exports = async (bot, channel, time) => {
     if (time.getTime() !== channel.lastPinTimestamp) return;
 
     // Check if the channel is on the server's CorkBoard blacklist. If it is, stop here.
-    const serverDenyList = JSON.parse(fs.readFileSync(`./config/server/${channel.guild.id}/denylist.json`, 'utf8'));
+    const serverDenyList = JSON.parse(readFileSync(`./config/server/${channel.guild.id}/denylist.json`, 'utf8'));
     if (serverDenyList.corkboard.includes(channel.id)) return channel.send("Sorry, this channel has been restricted from pinning posts to the CorkBoard.");
 
     // Check if channel is NSFW and whether the server allows NSFW pins. If the channel is NSFW and
@@ -38,7 +38,7 @@ module.exports = async (bot, channel, time) => {
     let pinChannel = channel.guild.channels.cache.find(c => c.id === serverConfig.corkboard.channelID);
     if (!pinChannel) {
         serverConfig.corkboard.channelID = null;
-        return fs.writeFileSync(`./config/server/${channel.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
+        return writeFileSync(`./config/server/${channel.guild.id}/config.json`, JSON.stringify(serverConfig, null, 1), 'utf8');
     }
 
     /* Get the channel's pinned messages, if applicable. The Insta-Pin will only fire if it found at least one message.
@@ -65,7 +65,7 @@ module.exports = async (bot, channel, time) => {
       await pinChannel.send({ embed });
 
       // Remove the pinned message from the channel.
-      if (channel.guild.me.permissionsIn(channel).has("MANAGE_MESSAGES")) { mostRecentPin.unpin(); }
+      if (channel.guild.me.permissionsIn(channel).has("MANAGE_MESSAGES")) mostRecentPin.unpin();
       else return channel.send("I couldn't unpin the latest pinned message! Do I have the `Manage Messages` permission...?");
     }
 }

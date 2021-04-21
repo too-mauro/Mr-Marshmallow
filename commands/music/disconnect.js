@@ -4,10 +4,10 @@ there is a playlist currently set, the bot will automatically clear it. */
 module.exports = {
     config: {
         name: "disconnect",
-        aliases: ["dc", "leave"],
+        description: "Leaves the voice channel.",
         usage: "",
-        category: "music",
-        description: "Leaves the voice channel."
+        aliases: ["dc", "leave"],
+        category: "music"
     },
     run: async (bot, message, args) => {
 
@@ -30,15 +30,23 @@ module.exports = {
         return message.channel.send(`**${message.author.username}**, you need to be in \`${message.guild.me.voice.channel}\` with me to use this command!`);
       }
 
-      const serverQueue = bot.queue.get(message.guild.id);
+      const serverQueue = bot.musicQueues.get(message.guild.id);
       if (serverQueue) {
         if (serverQueue.textChannel !== message.channel) {
           return message.channel.send(`Sorry **${message.author.username}**, I'm bound to ${serverQueue.textChannel} right now!`);
         }
-        serverQueue.connection.dispatcher.destroy();
-        serverQueue.voiceChannel.leave();
-        bot.queue.delete(message.guild.id);
-        return message.channel.send(`Successfully disconnected from \`${serverQueue.voiceChannel.name}\`!`);
+        try {
+          serverQueue.connection.dispatcher.destroy();
+          serverQueue.voiceChannel.leave();
+          bot.musicQueues.delete(message.guild.id);
+          return message.channel.send(`Successfully disconnected from \`${serverQueue.voiceChannel.name}\`!`);
+        }
+        catch (err) {
+          console.error(err);
+          message.guild.me.voice.channel.leave(); // serverQueue may or may not be defined
+          bot.musicQueues.delete(message.guild.id);
+          return message.channel.send(`Sorry **${message.author.username}**, something went wrong while trying to disconnect!`);
+        }
       }
       else {
         message.guild.me.voice.channel.leave();

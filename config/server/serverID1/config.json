@@ -1,37 +1,39 @@
 {
-  "prefix": "m!",
-  "doormat": {
-    "enabled": false,
-    "channelID": null,
-    "welcomeMessage": "Hiya username, welcome to servername!",
-    "leaveMessage": "Looks like username just left. See ya later!",
-    "banMessage": "username got banned from the server!"
-  },
-  "corkboard": {
-    "enabled": false,
-    "channelID": null,
-    "pinMode": "democratic",
-    "pinThreshold": 5,
-    "allowNSFW": false,
-    "maxDenyListSize": 50
-  },
-  "wordfilter": {
-    "enabled": false,
-    "maxDenyListSize": 50,
-    "warnings": {
-      "enabled": false,
-      "message": "Nice try username, but you're not allowed to say that. <:marshMad:696122820907761705>",
-      "warnType": "channel"
-    }
-  },
-  "music": {
-    "nowPlayingEnabled": true,
-    "embedEnabled": true,
-    "channelTopicChangeEnabled": true
-  },
-  "games": {
-    "triviaInProgress": false,
-    "riddlesInProgress": false
-  },
-  "maxQuotes": 300
+ "prefix": "m!",
+ "doormat": {
+  "enabled": false,
+  "channelID": null,
+  "welcomeMessage": "Hiya <user>, welcome to <server>!",
+  "leaveMessage": "Looks like <user> just left. See ya later!",
+  "banMessage": "<user> got banned from the server!"
+ },
+ "corkboard": {
+  "enabled": false,
+  "channelID": null,
+  "pinMode": "democratic",
+  "pinThreshold": 5,
+  "allowNSFW": false,
+  "maxDenyListSize": 50
+ },
+ "wordfilter": {
+  "enabled": false,
+  "maxDenyListSize": 50,
+  "warnings": {
+   "enabled": false,
+   "message": "Nice try <user>, but you're not allowed to say that. <:marshMad:833406243121004544>",
+   "warnType": "channel"
+  }
+ },
+ "music": {
+  "nowPlayingEnabled": true,
+  "embedEnabled": true,
+  "channelTopicChangeEnabled": true,
+  "voteSkipEnabled": false
+ },
+ "games": {
+  "triviaCmEnabled": false,
+  "maxLobbyPlayers": 10,
+  "maxLobbyRounds": 15
+ },
+ "maxQuotes": 300
 }
