@@ -27,8 +27,8 @@ This document serves as the complete change log for Mr. Marshmallow's developmen
   - `dab` now rates your dab from 1-10, where 10 is very stylish
   - Configuration settings now automatically generated for servers that added the bot while offline at startup
   - Now possible to load, unload, or reload multiple bot commands at once
-  - Changed "**username**" and "**servername**" variables in settings commands to **<user>** and **<server>** respectively
-  - New **<rules>** variable added to mention server's rules channel in welcome message (if server has one set)
+  - Changed "**username**" and "**servername**" variables in settings commands to `<user>` and `<server>` respectively
+  - New `<rules>` variable added to mention server's rules channel in welcome message (if server has one set)
 
 ### Minor Updates
 - Updated and unified word checker function, now part of the bot's "util" file

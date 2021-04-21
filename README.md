@@ -45,6 +45,9 @@ PM2, a Node.js process manager, is recommended to keep Mr. Marshmallow up and ru
 Mr. Marshmallow is currently released under the [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
 
 ## Acknowledgements
-[An Idiot's Guide](https://github.com/AnIdiotsGuide/discordjs-bot-guide) and [MenuDocs](https://github.com/MenuDocs/Discord.JS-Tutorial): command/event handler
+A special thanks to these people for making this project possible!
 
-[Open Trivia Database](https://opentdb.com/): trivia questions
+- [An Idiot's Guide](https://github.com/AnIdiotsGuide/discordjs-bot-guide) & [MenuDocs](https://github.com/MenuDocs/Discord.js-v12-Tutorials): Mr. Marshmallow's command & event handler
+- [Open Trivia Database](https://opentdb.com/): trivia questions for the `trivia` command
+- [Official Joke API](https://github.com/15Dkatz/official_joke_api): joke API for the `joke` command
+- [Astrology.com](https://astrology.com) & [Amanda Y. Huang](https://ohmanda.com/): horoscopes & API for `horoscope` command, respectively
