@@ -1,6 +1,10 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.10.0.1 (Hotfix 1)
+### Bug-fixes
+- Fixed an issue with the `skip` command not working
+
 ## v0.10
 ### Major Updates
 - Game updates

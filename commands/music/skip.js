@@ -1,6 +1,7 @@
 /* This command skips the currently playing song and plays the next one, if one is playing. */
 
 const {playSong} = require("../../config/bot/util.js");
+const {readFileSync} = require("fs");
 
 module.exports = {
     config: {
@@ -47,7 +48,7 @@ module.exports = {
       else return skipSong();
 
       function skipSong() {
-        serverConfig.votersToSkip.length = 0; // reset voter count
+        serverQueue.votersToSkip.length = 0; // reset voter count
         message.channel.send(":track_next: Skipped!");
         if (serverQueue.queueLoop) {
           /* if loop is on, push the song back at the end of the queue
