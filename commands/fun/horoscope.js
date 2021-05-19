@@ -41,30 +41,29 @@ module.exports = {
       });
     }
 
-    if (matched) {
-      try {
-        message.channel.send("Reading the stars and getting your daily horoscope...")
-          .then(async msg => {
-            const horoscope = await fetch(`https://ohmanda.com/api/horoscope/${input}`)
-              .then(res => res.json())
-              .then(json => {
-                setTimeout(() => {
-                  msg.edit(`- __${input.slice(0, 1).toUpperCase() + input.slice(1)} Daily Horoscope for ${getFullDate()}__ -\n${decode(json.horoscope)}`);
-                }, 1000);
-              })
-              .catch(err => {
-                console.error(err);
-                msg.edit("It's too hard to read out the stars right now. Try again later!");
-              });
-          });
-      }
-      catch (err) {
-        console.error(err);
-        return message.channel.send("It's too hard to read out the stars right now. Try again later!");
-      }
-    }
-    else {
+    if (!matched) {
       return message.channel.send(`**${message.author.username}**, please enter a valid sign!`);
+    }
+
+    try {
+      message.channel.send("Reading the stars and getting your daily horoscope...")
+        .then(async msg => {
+          const horoscope = await fetch(`https://ohmanda.com/api/horoscope/${input}`)
+            .then(res => res.json())
+            .then(json => {
+              setTimeout(() => {
+                msg.edit(`- __${input.slice(0, 1).toUpperCase() + input.slice(1)} Daily Horoscope for ${getFullDate()}__ -\n${decode(json.horoscope)}`);
+              }, 1000);
+            })
+            .catch(err => {
+              console.error(err);
+              msg.edit("It's too hard to read out the stars right now. Try again later!");
+            });
+        });
+    }
+    catch (err) {
+      console.error(err);
+      return message.channel.send("It's too hard to read out the stars right now. Try again later!");
     }
 
   }

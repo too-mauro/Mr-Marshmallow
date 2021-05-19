@@ -38,12 +38,12 @@ module.exports = {
             serverQueue.voiceChannel = message.member.voice.channel;
             serverQueue.connection = await message.member.voice.channel.join();
             bot.musicQueues.set(message.guild.id, serverQueue);
+            return message.channel.send(`Switched to \`${message.member.voice.channel.name}\`!`);
           }
           else {
             let connection = await message.member.voice.channel.join();
-            connection.setSpeaking(0);
+            return message.channel.send(`Joined \`${message.member.voice.channel.name}\`!`);
           }
-          return message.channel.send(`Joined \`${message.member.voice.channel.name}\`!`);
         }
         catch (err) {
           console.error(err);

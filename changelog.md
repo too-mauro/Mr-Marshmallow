@@ -1,6 +1,27 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.10.1
+### Major Updates
+- Bot now expects token to be stored as "DISCORD_TOKEN" variable in .env file
+- Searching for songs in `play` will return five choices to pick instead of getting the first result automatically
+
+### Minor Updates
+- "Now playing" messages now show the video's channel name (with a link if embeds are enabled)
+- `mock` command no longer counts spaces and symbols as part of characters to capitalize
+- Videos queued for playing now use the best audio quality available for each video instead of using specific itag values
+- `pause` takes a bit longer to pause a given song/stream and may need to be run twice to work properly
+  - This may be an issue with the Discord.js library and this command was modified to work as reliably as possible
+- Minor code tweaks
+- Package updates
+  - `dotenv` upgraded to v9.0.2
+  - `ytdl-core` upgraded to v4.8
+  - `ytpl` upgraded to v2.2.1
+
+### Bug-fixes
+- Battle turn starts correctly for the bot if player waits too long to choose
+
+
 ## v0.10.0.1 (Hotfix 1)
 ### Bug-fixes
 - Fixed an issue with the `skip` command not working
@@ -31,8 +52,8 @@ This document serves as the complete change log for Mr. Marshmallow's developmen
   - `dab` now rates your dab from 1-10, where 10 is very stylish
   - Configuration settings now automatically generated for servers that added the bot while offline at startup
   - Now possible to load, unload, or reload multiple bot commands at once
-  - Changed "**username**" and "**servername**" variables in settings commands to `<user>` and `<server>` respectively
-  - New `<rules>` variable added to mention server's rules channel in welcome message (if server has one set)
+  - Changed "**username**" and "**servername**" variables in settings commands to **<user>** and **<server>** respectively
+  - New **<rules>** variable added to mention server's rules channel in welcome message (if server has one set)
 
 ### Minor Updates
 - Updated and unified word checker function, now part of the bot's "util" file

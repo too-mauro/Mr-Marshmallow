@@ -156,7 +156,10 @@ module.exports = {
           .catch(() => {
             // player took too long to pick an option
             message.channel.send(`Time's up, ${currentPlayer.user}! Looks like you forfeit your turn.`);
-            return setTimeout(() => beginPlayerTurn(!playerOneTurn), 1500);
+            return setTimeout(() => {
+              if (otherPlayer.user.bot) return beginBotTurn(!playerOneTurn);
+              else return beginPlayerTurn(!playerOneTurn);
+            }, 1500);
           });
         });
       }

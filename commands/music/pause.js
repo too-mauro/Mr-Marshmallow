@@ -20,7 +20,7 @@ module.exports = {
 
       if (serverQueue.playing) {
         serverQueue.playing = false;
-        serverQueue.connection.dispatcher.pause(true);
+        serverQueue.connection.dispatcher.pause();
         return message.channel.send(":pause_button:  Paused!");
       }
       else {

@@ -27,8 +27,20 @@ module.exports = {
     if (restrictedWordsFiltered(message, serverConfig)) return;
 
     let chars = args.join(" ").toLowerCase().split("");
+    let regex = new RegExp(/[ \n\r\t!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/);
+    let previousCharacterCapitalized = false;
     chars.forEach((character, index) => {
-      if (index % 2 == 0) chars[index] = character.toUpperCase();
+      if (regex.test(character)) {
+        // is a space or symbol
+        return;
+      }
+      else if (!previousCharacterCapitalized) {
+        chars[index] = character.toUpperCase();
+        previousCharacterCapitalized = !previousCharacterCapitalized;
+      }
+      else {
+        previousCharacterCapitalized = !previousCharacterCapitalized;
+      }
     });
     return message.channel.send(chars.join(""));
   }

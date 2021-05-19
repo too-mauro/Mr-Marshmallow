@@ -33,7 +33,7 @@ module.exports = {
       if (serverConfig.music.voteSkipEnabled) {
         let humanListenerCount = serverQueue.voiceChannel.members.filter(member => !member.user.bot).size;
         let votesNeededToSkip = calculateNeededVotes(humanListenerCount);
-        if (humanListenerCount > 1 && serverQueue.votersToSkip.length < votesNeededToSkip) {
+        if (serverQueue.votersToSkip.length < votesNeededToSkip) {
           let neededVotesLeft = votesNeededToSkip - serverQueue.votersToSkip.length;
           if (serverConfig.votersToSkip.includes(message.author.id)) {
             return message.channel.send(`Sorry **${message.author.username}**, you already voted to skip this song! (${neededVotesLeft} more ${(neededVotesLeft == 1) ? "vote" : "votes"} needed)`);
@@ -50,14 +50,14 @@ module.exports = {
       function skipSong() {
         serverQueue.votersToSkip.length = 0; // reset voter count
         message.channel.send(":track_next: Skipped!");
-        if (serverQueue.queueLoop) {
+        if (serverQueue.loop.queue) {
           /* if loop is on, push the song back at the end of the queue
           so it can repeat endlessly */
           let lastSong = serverQueue.songs.shift();
           serverQueue.songs.push(lastSong);
           return playSong(bot, serverQueue.songs[0], message);
         }
-        else if (serverQueue.songLoop) {
+        else if (serverQueue.loop.song) {
           // don't modify the queue and just repeat the first song
           return playSong(bot, serverQueue.songs[0], message);
         }

@@ -46,6 +46,5 @@ module.exports = {
           message.channel.send("Time's up! The operation has been cancelled.");
         });
       });
-
     }
 }

@@ -82,7 +82,7 @@ module.exports = {
     if (!image) return null;
     return attachment;
   },
-  playSong: (bot, song, message) => {
+  playSong: async (bot, song, message) => {
     const {readFileSync} = require("fs");
     const ytdl = require("ytdl-core");
     let serverConfig = JSON.parse(readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8"));
@@ -98,10 +98,12 @@ module.exports = {
     }
     let stream = null;
     try {
-      // an audio quality of 95 works best for live-streamed videos, while 251 works for non-live ones
-      // this operator checks whether the queued video is live (has a queue duration of 0 as determined in the play command)
-      let audioQuality = (queue.songs[0].duration == "LIVE") ? "95" : "251";
-      stream = ytdl(queue.songs[0].url, { filter: "audio", highWaterMark: 1 << 25, volume: false, quality: audioQuality });
+        stream = ytdl(queue.songs[0].url, {
+          filter: (queue.songs[0].isLive) ? "audioandvideo" : "audio",
+          highWaterMark: 1 << 25,
+          volume: false,
+          quality: "highestaudio"
+        });
     }
     catch (err) {
       console.error(err);
@@ -124,18 +126,15 @@ module.exports = {
                   .setColor(blue_dark)
                   .setTitle("Now Playing 🎵")
                   .setDescription(`[${song.title}](${song.url})`)
-                  .addField("Length", song.duration, true)
+                  .addField("Song Duration", song.duration, true)
+                  .addField("Channel", `[${song.channelName}](${song.channelUrl})`, true)
                   .addField("Requested by", song.requester, true)
-                  .addField("Up Next", queue.songLoop ? `${song.title} (loop)` : (queue.songs[1] ? queue.songs[1].title : "Nothing"), false)
+                  .addField("Up Next", queue.loop.song ? `${song.title} (loop)` : (queue.songs[1] ? queue.songs[1].title : "Nothing"), false)
                   .setThumbnail(song.thumbnail);
               message.channel.send({embed});
             }
             else {
-              message.channel.send(`**Now Playing 🎵**
-              ${song.title}
-              **Length:** ${song.duration}
-              **Requested by:** ${song.requester}
-              **Up Next:** ${queue.songLoop ? `${song.title} (loop)` : (queue.songs[1] ? queue.songs[1].title : "Nothing")}`);
+              message.channel.send(`**Now Playing 🎵**\n${song.title}\n**Song Duration:** ${song.duration}\n**Channel**: ${song.channelName}\n**Requested by:** ${song.requester}\n**Up Next:** ${queue.loop.song ? `${song.title} (loop)` : (queue.songs[1] ? queue.songs[1].title : "Nothing")}`);
             }
           }
 
@@ -146,15 +145,17 @@ module.exports = {
         .on("finish", () => {
           queue.votersToSkip.length = 0; // reset vote count
 
-          if (queue.songLoop) {
+          if (queue.loop.song) {
             module.exports.playSong(bot, queue.songs[0], message);
           }
-          else if (queue.queueLoop) {
+          else if (queue.loop.queue) {
             let lastSong = queue.songs.shift();
             queue.songs.push(lastSong);
             module.exports.playSong(bot, queue.songs[0], message);
           }
           else {
+            queue.totalLength -= queue.songs[0].queueDuration;
+
             // Recursively play the next song
             queue.songs.shift();
             module.exports.playSong(bot, queue.songs[0], message);
@@ -165,8 +166,11 @@ module.exports = {
           message.channel.send(`Whoops, I couldn't play **${queue.songs[0].title}**! (${err.message ? err.message : err})`);
           queue.songs.shift();
           module.exports.playSong(bot, queue.songs[0], message);
+        })
+        .on("debug", (info) => {
+          console.log(info);
         });
-      dispatcher.setVolumeLogarithmic(1);
+      dispatcher.setVolume(1);
     }
     catch (err) {
       if (queue) {

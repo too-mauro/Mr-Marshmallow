@@ -12,12 +12,11 @@ module.exports = async (bot, message) => {
 
     /* Don't do anything if the message is in a direct message, the author is a
        bot, the server is unavailable, or the bot has no permission to send messages. */
-    if (message.author.bot || message.channel.type == "dm") return;
+    if (message.author.bot || !message.guild) return;
     else if (!message.guild.available || !message.guild.me.permissionsIn(message.channel).has("SEND_MESSAGES")) return;
 
     // Get the server's configuration file data.
     const serverConfig = JSON.parse(readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8"));
-    const mentionRegex = new RegExp(`^(<@!?${bot.user.id}>)\\s*`);
 
     /* Make the prefix lowercase (if applicable) which ensures a case-insensitive
        prefix. Then, get any arguments and search for a known command. If one is found, run it.
@@ -37,6 +36,7 @@ module.exports = async (bot, message) => {
     if (restrictedWordsFiltered(message, serverConfig)) return;
 
     // If a user mentions the bot outside of a command, return the server's prefix.
+    const mentionRegex = new RegExp(`^(<@!?${bot.user.id}>)\\s*`);
     if (mentionRegex.test(message.content)) {
       return message.channel.send(`Forgot my prefix? **${message.guild.name}**'s prefix is: \` ${serverConfig.prefix} \``);
     }

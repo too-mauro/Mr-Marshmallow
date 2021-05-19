@@ -15,6 +15,7 @@ try {
 
   /* Initialize the bot and load all the commands (and respective aliases) and the needed data
   structures for the music commands and the trivia and battle games into memory. */
+  // const bot = new Client();
   const bot = new Client();
   ["aliases", "commands"].forEach(x => bot[x] = new Collection());
   ["musicQueues", "triviaLobbies","battleGames"].forEach(x => bot[x] = new Map());
@@ -33,7 +34,7 @@ try {
   });
 
   // Logs the bot into the Discord platform using the bot token in the .env file.
-  bot.login(process.env.TOKEN);
+  bot.login(process.env.DISCORD_TOKEN);
 }
 catch (err) {
   console.error("Failed to initialize the bot server!\n", err);

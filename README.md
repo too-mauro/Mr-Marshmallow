@@ -31,9 +31,9 @@ This project runs on top of Node.js, so you will need to install version 14 or h
 
 Once Node.js is installed, clone or download this repository. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a new bot user. You will receive a token that you will need to run this bot. Go to the directory where you downloaded this repository and create a new file called `.env` in the same location as `server.js`. In it, enter your token using the following structure:
 ```
-TOKEN='<your-token-here>'
+DISCORD_TOKEN='<your-token-here>'
 ```
-Save the file and close it. From there, open a terminal/command prompt window, and type `node server.js`, which will run Mr. Marshmallow!
+Replace the `<your-token-here>` with the token you received, then save the file and close it. From there, open a terminal/command prompt window, and type `node server.js`, which will run Mr. Marshmallow!
 
 ### Getting Music Functionality to Work
 Starting with v0.9, Mr. Marshmallow requires the use of the "ffmpeg" application for the music commands to function properly. If you plan to use these commands, install this application.

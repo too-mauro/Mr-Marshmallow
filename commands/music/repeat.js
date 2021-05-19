@@ -30,20 +30,20 @@ module.exports = {
 
       if (args[0]) args[0] = args[0].toLowerCase();
       if (args[0] == "queue" || args[0] == "all") {
-        if (serverQueue.songLoop) serverQueue.songLoop = !serverQueue.songLoop;
-        serverQueue.queueLoop = !serverQueue.queueLoop;
-        return message.channel.send(`:repeat:  Playlist repeat is now ${serverQueue.queueLoop ? "**on**" : "**off**"}.`);
+        if (serverQueue.loop.song) serverQueue.loop.song = !serverQueue.loop.song;
+        serverQueue.loop.queue = !serverQueue.loop.queue;
+        return message.channel.send(`:repeat:  Playlist repeat is now ${serverQueue.loop.queue ? "**on**" : "**off**"}.`);
       }
       else {
         const prefix = JSON.parse(readFileSync(`./config/server/${message.guild.id}/config.json`, "utf8")).prefix;
-        if (serverQueue.playlistLoop) {
-          serverQueue.playlistLoop = !serverQueue.playlistLoop;
-          return message.channel.send(`:repeat:  Playlist repeat is now ${serverQueue.queueLoop ? "**on**" : "**off**"}.\n(Do \`${prefix}repeat\` again to toggle song loop.)`);
+        if (serverQueue.loop.queue) {
+          serverQueue.loop.queue = !serverQueue.loop.queue;
+          return message.channel.send(`:repeat:  Playlist repeat is now ${serverQueue.loop.queue ? "**on**" : "**off**"}.\n(Do \`${prefix}repeat\` again to toggle song loop.)`);
         }
         else {
-          serverQueue.songLoop = !serverQueue.songLoop;
+          serverQueue.loop.song = !serverQueue.loop.song;
           bot.musicQueues.set(message.guild.id, serverQueue);
-          return message.channel.send(`:repeat:  Song repeat is now ${serverQueue.songLoop ? "**on**" : "**off**"}.\n(Do \`${prefix}repeat <queue/all>\` to toggle queue loop.)`);
+          return message.channel.send(`:repeat:  Song repeat is now ${serverQueue.loop.song ? "**on**" : "**off**"}.\n(Do \`${prefix}repeat <queue/all>\` to toggle queue loop.)`);
         }
       }
 

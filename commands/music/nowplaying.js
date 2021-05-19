@@ -33,9 +33,10 @@ module.exports = {
           .setColor(blue_dark)
           .setTitle("Now Playing 🎵")
           .setDescription(`[${song.title}](${song.url})`)
-          .addField("Length", song.duration, true)
+          .addField("Song Duration", song.duration, true)
+          .addField("Channel", `[${song.channelName}](${song.channelUrl})`, true)
           .addField("Requested by", song.requester, true)
-          .addField("Up Next", serverQueue.songLoop ? `${song.title} (loop)` : (serverQueue.songs[1] ? serverQueue.songs[1].title : "Nothing"), false)
+          .addField("Up Next", serverQueue.loop.song ? `${song.title} (loop)` : (serverQueue.songs[1] ? serverQueue.songs[1].title : "Nothing"), false)
           .setThumbnail(song.thumbnail);
         return message.channel.send({embed});
       }
@@ -44,7 +45,7 @@ module.exports = {
         ${song.title}
         **Length:** ${song.duration}
         **Requested by:** ${song.requester}
-        **Up Next:** ${serverQueue.songLoop ? `${song.title} (loop)` : (serverQueue.songs[1] ? serverQueue.songs[1].title : "Nothing")}`);
+        **Up Next:** ${serverQueue.loop.song ? `${song.title} (loop)` : (serverQueue.songs[1] ? serverQueue.songs[1].title : "Nothing")}`);
       }
 
     }
