@@ -33,13 +33,13 @@ module.exports = {
       if (serverConfig.music.voteSkipEnabled) {
         let humanListenerCount = serverQueue.voiceChannel.members.filter(member => !member.user.bot).size;
         let votesNeededToSkip = calculateNeededVotes(humanListenerCount);
-        if (serverQueue.votersToSkip.length < votesNeededToSkip) {
+        if (humanListenerCount > 1 && serverQueue.votersToSkip.length < votesNeededToSkip) {
           let neededVotesLeft = votesNeededToSkip - serverQueue.votersToSkip.length;
-          if (serverConfig.votersToSkip.includes(message.author.id)) {
+          if (serverQueue.votersToSkip.includes(message.author.id)) {
             return message.channel.send(`Sorry **${message.author.username}**, you already voted to skip this song! (${neededVotesLeft} more ${(neededVotesLeft == 1) ? "vote" : "votes"} needed)`);
           }
           else {
-            serverConfig.votersToSkip.push(message.author.id);
+            serverQueue.votersToSkip.push(message.author.id);
             return message.channel.send(`**${message.author.username}** voted to skip this song! (${neededVotesLeft} more ${(neededVotesLeft == 1) ? "vote" : "votes"} needed)`);
           }
         }
