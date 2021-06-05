@@ -17,12 +17,12 @@
     "@discordjs/opus": "^0.5.0",
     "common-tags": "^1.8.0",
     "discord.js": "^12.5.3",
-    "dotenv": "^9.0.2",
+    "dotenv": "^10.0.0",
     "ffmpeg": "0.0.4",
     "ffmpeg-static": "^4.3.0",
     "he": "^1.2.0",
     "yt-search": "^2.8.0",
-    "ytdl-core": "^4.8.0",
+    "ytdl-core": "^4.8.2",
     "ytpl": "^2.2.1"
   }
 }

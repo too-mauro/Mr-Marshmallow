@@ -1,6 +1,13 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.10.1.2 (Hotfix)
+### Minor Updates
+- Updated packages:
+  - `dotenv` now at v10
+  - `ytdl-core` now at v4.8.2
+- Fixed a security vulnerability with websocket package via update
+
 ## v0.10.1.1 (Hotfix)
 ### Bug-fixes
 - Fixed another issue with the `skip` command and the voting system
