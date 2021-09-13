@@ -1,6 +1,15 @@
 # Mr. Marshmallow Change Log
 This document serves as the complete change log for Mr. Marshmallow's development. All versions listed here record the changes that have occurred between versions uploaded to this repository.
 
+## v0.10.1.4
+### Minor Updates
+- Fixed an arbitrary file creation/overwrite and arbitrary code execution security vulnerability in `tar` package
+- Updated packages:
+  - Discord.js audio package (`@discordjs/opus`) now at v0.6.0
+  - `ytdl-core` updated to v4.9.1
+  - `ytpl` updated to v2.2.3
+  - `yt-search` updated to v2.10.1
+
 ## v0.10.1.3
 ### Minor Updates
 - Fixed a Denial of Service security vulnerability with `css-what` package (`yt-search` dependency)
